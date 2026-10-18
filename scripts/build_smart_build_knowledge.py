@@ -7,7 +7,7 @@ BASE_DIR = Path(__file__).resolve().parents[1]
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-from smart_build_engine import main
+from backend.services.smart_build_engine import main
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ BASE_DIR = Path(__file__).resolve().parents[1]
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-from market_analytics_pipeline import main as delegated_main
+from backend.services.market_analytics_pipeline import main as delegated_main
 
 
 if __name__ == "__main__":
@@ -30,7 +30,7 @@ BASE_DIR = Path(__file__).resolve().parents[1]
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-from product_catalog_classifier import classify_product, load_catalog_rows
+from backend.services.product_catalog_classifier import classify_product, load_catalog_rows
 
 SQLITE_PATH = BASE_DIR / "data" / "taobao_market.db"
 COMPOSE_FILE = BASE_DIR / "docker-compose.yml"
