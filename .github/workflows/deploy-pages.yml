@@ -1,0 +1,44 @@
+name: Deploy to GitHub Pages
+
+# 触发时机：push 到 main 分支，或手动触发
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Pages 部署所需权限
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同一时间只运行一个部署，避免冲突
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 代码
+        uses: actions/checkout@v4
+
+      - name: 配置 Pages
+        uses: actions/configure-pages@v5
+
+      - name: 上传静态展示页
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: showcase   # 部署 showcase 目录下的静态文件
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: 部署到 GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,45 @@
+{% extends "portal_base.html" %}
+{% block title %}推荐历史{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="section-head">
+    <p class="section-tag">History</p>
+    <h2>推荐历史记录</h2>
+  </div>
+  {% if history %}
+  <div class="history-stack">
+    {% for task in history %}
+    <article class="history-card">
+      <div class="history-head">
+        <div>
+          <h3>#{{ task.id }} {{ task.usage_label }}</h3>
+          <p>{{ task.created_at }}</p>
+        </div>
+        <div class="history-meta">
+          <span>预算：¥ {{ "%.2f"|format(task.budget) }}</span>
+          <span>推荐总价：¥ {{ "%.2f"|format(task.total_budget) }}</span>
+        </div>
+      </div>
+      <p class="history-note">{{ task.note }}</p>
+      <div class="action-row" style="margin-top:10px">
+        <a class="secondary-button" href="{{ url_for('community_publish', source='recommendation', task_id=task.id) }}" data-toast="?????????">分享至社区</a>
+      </div>
+      <div class="history-result-grid">
+        {% for item in task.results %}
+        <article class="history-result-card">
+          <strong>{{ item.keyword }} / {{ item.product_subtype }}</strong>
+          <span>{{ item.shop }}</span>
+          <span>{{ item.sku_name }}</span>
+          <span>¥ {{ "%.2f"|format(item.effective_price) }}</span>
+          <span>{{ item.reason_text }}</span>
+        </article>
+        {% endfor %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">当前还没有推荐历史，先去生成一条推荐记录。</div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,227 @@
+# PC 装机兼容性规则库
+# 格式说明:
+#   severity: hard (必须满足) | soft (强烈建议) | info (提示信息)
+#   check: check_name (对应 CompatibilityEngine 中的检查方法)
+
+rules:
+  # ============================================================
+  # CPU ↔ 主板 兼容性
+  # ============================================================
+  - id: cpu_motherboard_vendor
+    severity: hard
+    title: "CPU 厂商必须与主板芯片组匹配"
+    detail: "{cpu_subtype} ({cpu_vendor}) 需要搭配 {cpu_vendor} 平台主板，当前选择的 {board_subtype} 不兼容"
+    fields:
+      - cpu_subtype
+      - cpu_vendor
+      - board_subtype
+
+  - id: cpu_motherboard_platform
+    severity: hard
+    title: "CPU 插槽必须与主板芯片组匹配"
+    detail: "{cpu_subtype} 为 {platform} 平台，需要搭配对应芯片组主板"
+    fields:
+      - cpu_subtype
+      - platform
+      - board_subtype
+
+  # ============================================================
+  # CPU / 主板 → 内存 兼容性
+  # ============================================================
+  - id: cpu_memory_generation
+    severity: hard
+    title: "CPU 平台决定内存代际"
+    detail: "{cpu_subtype} ({platform}) 需搭配 {required_gen} 内存，当前选择为 {memory_gen}"
+    fields:
+      - cpu_subtype
+      - platform
+      - required_gen
+      - memory_gen
+
+  - id: ddr5_high_freq_stability
+    severity: soft
+    title: "DDR5 高频稳定性提醒"
+    detail: "AM5 平台搭配 DDR5-{speed} 以上内存可能存在稳定性问题，建议确认主板 QVL 列表或适当降频"
+    fields:
+      - platform
+      - speed
+
+  # ============================================================
+  # GPU → 电源 兼容性
+  # ============================================================
+  - id: gpu_12vhpwr_connector
+    severity: hard
+    title: "RTX 40/50 系列显卡需要 12VHPWR 供电接口"
+    detail: "{gpu_subtype} 使用 12VHPWR/12V-2x6 供电接口，请确认电源是否原生支持该接口或附带转接线。建议选择 ATX 3.0/3.1 规格电源"
+    fields:
+      - gpu_subtype
+
+  - id: gpu_psu_wattage
+    severity: hard
+    title: "电源功率不足提醒"
+    detail: "{gpu_subtype} 建议电源 ≥ {required_w}W，当前选择为 {selected_w}W，可能不够"
+    fields:
+      - gpu_subtype
+      - required_w
+      - selected_w
+
+  # ============================================================
+  # 散热器 ↔ 机箱 兼容性
+  # ============================================================
+  - id: dual_tower_cooler_vs_itx_case
+    severity: soft
+    title: "双塔风冷与 ITX 机箱兼容提醒"
+    detail: "双塔风冷 ({cooler_subtype}) 高度可能超出 ITX 机箱限高，建议换用下压式风冷、120mm 单塔或 240 水冷"
+    fields:
+      - cooler_subtype
+      - case_size
+
+  - id: aio_360_vs_itx_case
+    severity: soft
+    title: "360 水冷与 ITX 机箱兼容提醒"
+    detail: "360 水冷通常不支持 ITX 机箱，请确认机箱是否明确支持 360 冷排安装位"
+    fields:
+      - cooler_subtype
+      - case_size
+
+  - id: cooler_vs_ram_clearance
+    severity: soft
+    title: "风冷与高马甲内存兼容提醒"
+    detail: "双塔风冷可能遮挡内存插槽，若使用高马甲内存条，建议确认散热器内存避让设计或换用低马甲/无光内存"
+    fields:
+      - cooler_subtype
+      - memory_subtype
+
+  # ============================================================
+  # 机箱 ↔ 主板/显卡/电源 物理兼容性
+  # ============================================================
+  - id: itx_case_vs_atx_psu
+    severity: hard
+    title: "ITX 机箱不支持标准 ATX 电源"
+    detail: "ITX 机箱通常只支持 SFX/SFX-L 电源，标准 ATX 电源无法安装。请选择 SFX 规格电源或更换更大机箱"
+    fields:
+      - case_size
+      - psu_form_factor
+
+  - id: gpu_length_vs_case
+    severity: soft
+    title: "显卡长度与机箱空间兼容提醒"
+    detail: "{gpu_subtype} ({gpu_length}) 可能超出 {case_size} 机箱的显卡限长，请确认机箱显卡限长"
+    fields:
+      - gpu_subtype
+      - gpu_length
+      - case_size
+
+  - id: matx_case_vs_atx_motherboard
+    severity: hard
+    title: "MATX 机箱不支持 ATX 主板"
+    detail: "MATX 机箱无法安装标准 ATX 主板，请选择 M-ATX 或 ITX 规格主板，或更换为 ATX 机箱"
+    fields:
+      - case_size
+      - board_form_factor
+
+  # ============================================================
+  # PCIe 代际带宽匹配
+  # ============================================================
+  - id: pcie_gen_gpu_vs_motherboard
+    severity: info
+    title: "PCIe 代际带宽提示"
+    detail: "{gpu_subtype} 支持 PCIe {gpu_pcie_gen}，当前主板仅支持 PCIe {board_pcie_gen}，可能损失部分带宽（实际游戏性能影响通常较小）"
+    fields:
+      - gpu_subtype
+      - gpu_pcie_gen
+      - board_pcie_gen
+
+  # ============================================================
+  # BIOS / 固件版本
+  # ============================================================
+  - id: bios_update_for_new_cpu
+    severity: info
+    title: "BIOS 更新提醒"
+    detail: "{board_subtype} 搭配 {cpu_subtype} 可能需要更新 BIOS 才能正常点亮，建议选择支持 USB BIOS Flashback 的主板或确认出厂 BIOS 版本"
+    fields:
+      - board_subtype
+      - cpu_subtype
+
+# ============================================================
+# 参考数据表
+# ============================================================
+reference_data:
+  # CPU 插槽平台 → 兼容芯片组
+  cpu_platform_chipsets:
+    AM5: [B650, B650M, B850, B850M, X670, X670E, X870, X870E, A620]
+    AM4: [B550, B550M, X570, A520, A520M, A320, X470, B450, B450M]
+    LGA1700: [B760, B760M, Z790, Z690, H610, H610M, H710, B660, B660M, H670]
+    LGA1851: [Z890, B860, B860M, H810, H810M]
+
+  # 主板芯片组 → 支持的内存代际
+  board_memory_gen:
+    DDR5: [B650, B650M, B850, B850M, X670, X670E, X870, X870E, A620, B860, B860M, Z890, H810, H810M]
+    DDR4: [B550, B550M, X570, A520, A520M, A320, X470, B450, B450M, H610, H610M, B660, B660M, H670]
+    DDR4_or_DDR5: [B760, B760M, Z790, Z690, H710]
+
+  # GPU 型号 → 推荐 PSU 最低瓦数
+  gpu_psu_wattage:
+    "RTX 5090": 1000
+    "RTX 5080": 850
+    "RTX 5070 Ti": 750
+    "RTX 5070": 700
+    "RTX 5060 Ti": 650
+    "RTX 5060": 600
+    "RTX 4090": 1000
+    "RTX 4080 SUPER": 850
+    "RTX 4080": 850
+    "RTX 4070 Ti SUPER": 750
+    "RTX 4070 Ti": 750
+    "RTX 4070 SUPER": 700
+    "RTX 4070": 650
+    "RTX 4060 Ti": 600
+    "RTX 4060": 550
+    "RTX 3090": 850
+    "RTX 3080": 750
+    "RTX 3070": 650
+    "RTX 3060": 600
+    "RTX 3050": 500
+    "GTX 1660 SUPER": 450
+    "GTX 1660": 450
+    "GTX 1650": 400
+    "RX 9070 XT": 750
+    "RX 9070": 700
+    "RX 9060 XT": 650
+    "RX 7900 XTX": 850
+    "RX 7900 XT": 750
+    "RX 7800 XT": 700
+    "RX 7700 XT": 650
+    "RX 7600": 550
+
+  # GPU 型号 → 所需电源接口类型
+  gpu_power_connector:
+    "12VHPWR": ["RTX 5090", "RTX 5080", "RTX 5070 Ti", "RTX 4090", "RTX 4080 SUPER", "RTX 4080", "RTX 4070 Ti SUPER", "RTX 4070 Ti", "RTX 4070 SUPER"]
+    "8-pin": ["RTX 5070", "RTX 4070", "RTX 4060 Ti", "RTX 4060", "RTX 3060", "RTX 3050"]
+
+  # GPU 型号 → PCIe 代际
+  gpu_pcie_gen:
+    "Gen5": ["RTX 5090", "RTX 5080", "RTX 5070 Ti", "RTX 5070", "RTX 5060 Ti", "RTX 5060"]
+    "Gen4": ["RTX 4090", "RTX 4080 SUPER", "RTX 4080", "RTX 4070 Ti SUPER", "RTX 4070 Ti", "RTX 4070 SUPER", "RTX 4070", "RTX 4060 Ti", "RTX 4060", "RTX 3090", "RTX 3080", "RTX 3070", "RTX 3060", "RTX 3050", "RX 9070 XT", "RX 9070", "RX 9060 XT", "RX 7900 XTX", "RX 7900 XT", "RX 7800 XT", "RX 7700 XT", "RX 7600"]
+
+  # 主板芯片组 → PCIe 代际
+  board_pcie_gen:
+    "Gen5": [X670E, X870E, X870, Z890, B850]
+    "Gen4": [B650, B650M, B850M, X670, Z790, Z690, B760, B760M, B860, B860M]
+    "Gen3": [B550, B550M, X570, A520, A520M, H610, H610M, A620, H810, H810M, B450, B450M]
+
+  # 需要 BIOS 更新的组合：旧主板 + 新 CPU
+  bios_update_combos:
+    - boards: [B650, B650M, X670, X670E, A620]
+      cpus: ["9700X", "9600X", "9800X3D", "9900X", "9950X"]
+      note: "需要更新 BIOS 以支持 Ryzen 9000 系列"
+    - boards: [B760, B760M, Z790, Z690]
+      cpus: ["ULTRA 5", "ULTRA 7", "ULTRA 9"]
+      note: "需要更新 BIOS 以支持 Intel Core Ultra 200 系列"
+
+  # ITX 机箱限制
+  itx_restrictions:
+    psu_form_factor: [SFX, SFX-L, Flex]  # ITX 机箱只能使用这些规格电源
+    max_air_cooler_height_mm: 135         # 下压式或小型塔式
+    max_gpu_length_mm: 300                # 典型限长
+    aio_support: [120, 240]               # 通常不支持 280/360

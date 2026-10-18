@@ -1,0 +1,174 @@
+{% extends "portal_base.html" %}
+{% block title %}推荐中心{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="section-head">
+    <p class="section-tag">Recommend</p>
+    <h2>输入预算与偏好，生成装机推荐</h2>
+    <p class="section-hint">底层使用与"智能搭配"相同的引擎，确保推荐一致性。</p>
+  </div>
+  <form method="post" class="form-grid multi-column" data-toast-submit="????????">
+    <label>
+      <span>预算</span>
+      <input type="number" min="1000" step="100" name="budget" required />
+    </label>
+    <label>
+      <span>用途场景</span>
+      <select name="usage_scenario" required>
+        {% for code, profile in recommendation_profiles.items() %}
+        <option value="{{ code }}" {% if current_user and current_user.usage_preference == code %}selected{% endif %}>{{ profile.label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      <span>已选 CPU</span>
+      <select name="selected_cpu">
+        <option value="">不指定</option>
+        {% for item in options.cpu %}
+        <option value="{{ item }}">{{ item }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      <span>已选 显卡</span>
+      <select name="selected_gpu">
+        <option value="">不指定</option>
+        {% for item in options.gpu %}
+        <option value="{{ item }}">{{ item }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      <span>已选 主板</span>
+      <select name="selected_motherboard">
+        <option value="">不指定</option>
+        {% for item in options.motherboard %}
+        <option value="{{ item }}">{{ item }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      <span>已选 内存</span>
+      <select name="selected_memory">
+        <option value="">不指定</option>
+        {% for item in options.memory %}
+        <option value="{{ item }}">{{ item }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      <span>已选 固态硬盘</span>
+      <select name="selected_storage">
+        <option value="">不指定</option>
+        {% for item in options.storage %}
+        <option value="{{ item }}">{{ item }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      <span>已选 电源</span>
+      <select name="selected_power">
+        <option value="">不指定</option>
+        {% for item in options.power %}
+        <option value="{{ item }}">{{ item }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      <span>已选 机箱</span>
+      <select name="selected_case">
+        <option value="">不指定</option>
+        {% for item in options.case %}
+        <option value="{{ item }}">{{ item }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <button type="submit" class="primary-button">生成推荐</button>
+  </form>
+</section>
+
+{% if recommendation_payload %}
+<section class="card">
+  <div class="section-head">
+    <p class="section-tag">Result</p>
+    <h2>推荐结果 #{{ recommendation_payload.task_id }}</h2>
+  </div>
+  <div class="summary-grid">
+    <article class="summary-card">
+      <span>用途</span>
+      <strong>{{ recommendation_payload.usage_label }}</strong>
+    </article>
+    <article class="summary-card">
+      <span>预算</span>
+      <strong>¥ {{ "%.2f"|format(recommendation_payload.budget) }}</strong>
+    </article>
+    <article class="summary-card">
+      <span>推荐总价</span>
+      <strong>¥ {{ "%.2f"|format(recommendation_payload.total_price) }}</strong>
+    </article>
+  </div>
+
+  <div class="recommend-grid">
+    {% for item in recommendation_payload.results %}
+    <article class="recommend-card">
+      <div class="recommend-card-top">
+        <p class="item-keyword">{{ item.component_type }}</p>
+        <span class="mini-price">¥ {{ "%.2f"|format(item.effective_price) }}</span>
+      </div>
+      <h3>{{ item.component_subtype }}</h3>
+      <p class="item-shop">{{ item.shop or '未提供店铺信息' }}</p>
+      <p class="item-sku">{{ item.sku_name }}</p>
+      {% if item.source_url %}
+      <a class="jump-button" href="{{ item.source_url }}" target="_blank" rel="noopener noreferrer">查看商品</a>
+      {% endif %}
+      <p class="item-reason">{{ item.reason_text }}</p>
+    </article>
+    {% endfor %}
+  </div>
+
+  {% if recommendation_payload.physical_warnings %}
+  <div class="note-list note-list-warning">
+    {% for warn in recommendation_payload.physical_warnings %}
+    <p><strong>[{{ warn.level }}] {{ warn.title }}</strong>: {{ warn.detail }}</p>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="note-list">
+    {% for note in recommendation_payload.notes %}
+    <p>{{ note }}</p>
+    {% endfor %}
+  </div>
+  <div class="action-row">
+    <a class="secondary-button" href="{{ url_for('community_publish', source='recommendation', task_id=recommendation_payload.task_id) }}" data-toast="?????????">发布到装机方案社区</a>
+  </div>
+  {% if related_articles %}
+  <section class="card" style="margin-top:18px;padding:18px">
+    <div class="section-head-inline">
+      <div>
+        <p class="section-tag">Knowledge</p>
+        <h2>相关阅读与兼容性说明</h2>
+      </div>
+      <a class="ghost-link" href="{{ url_for('knowledge_home') }}" data-toast="????????">查看知识中心</a>
+    </div>
+    <div class="mini-stack">
+      {% for article in related_articles %}
+      <a class="knowledge-card" href="{{ url_for('knowledge_article_detail', article_id=article.id) }}" style="text-decoration:none;color:inherit">
+        <div class="knowledge-head">
+          <div>
+            <h3>{{ article.title }}</h3>
+            <div class="meta-line">
+              <span>{{ article.category_name }}</span>
+              <span>{{ article.created_at }}</span>
+            </div>
+          </div>
+        </div>
+        <p class="article-copy">{{ article.summary }}</p>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</section>
+{% endif %}
+{% endblock %}

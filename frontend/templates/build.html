@@ -1,0 +1,229 @@
+{% extends "build_portal_base.html" %}
+{% block title %}智能搭配中心{% endblock %}
+{% block page_title %}智能搭配中心{% endblock %}
+{% block content %}
+<section class="build-studio-grid">
+  <article class="card form-panel" id="structuredBuildFormPanel">
+    <div class="section-head">
+      <p class="section-tag">Smart Build Form</p>
+      <h2>结构化输入</h2>
+    </div>
+    {% if current_user and (current_user.usage_preference or current_user.budget_max or current_user.preferred_brands or current_user.preferred_keywords) %}
+    <div class="profile-applied-row">
+      {% if current_user.usage_preference and current_user.usage_preference in build_profiles %}
+      <span class="plan-pill">默认场景 {{ build_profiles[current_user.usage_preference].label }}</span>
+      {% endif %}
+      {% if current_user.budget_max %}
+      <span class="plan-pill">预算上限 ¥{{ "%.0f"|format(current_user.budget_max) }}</span>
+      {% endif %}
+      {% if current_user.preferred_brands %}
+      <span class="plan-pill">品牌 {{ current_user.preferred_brands }}</span>
+      {% endif %}
+      {% if current_user.preferred_keywords %}
+      <span class="plan-pill">关键词 {{ current_user.preferred_keywords }}</span>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <form method="post" class="form-grid multi-column" id="buildForm" data-toast-submit="?????????">
+      <label>
+        <span>预算</span>
+        <input type="number" min="1500" step="100" name="budget" id="buildBudgetInput" value="{{ form_state.budget or '' }}" required />
+      </label>
+      <label>
+        <span>使用场景</span>
+        <select name="usage_scenario" id="buildUsageSelect" required>
+          {% for code, profile in build_profiles.items() %}
+          <option value="{{ code }}" {% if form_state.usage_scenario == code %}selected{% endif %}>{{ profile.label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        <span>已选 CPU</span>
+        <select name="selected_cpu">
+          <option value="">不指定</option>
+          {% for item in options.cpu %}
+          <option value="{{ item }}" {% if form_state.selected_parts.get('CPU') == item %}selected{% endif %}>{{ item }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        <span>已选显卡</span>
+        <select name="selected_gpu">
+          <option value="">不指定</option>
+          {% for item in options.gpu %}
+          <option value="{{ item }}" {% if form_state.selected_parts.get('显卡') == item %}selected{% endif %}>{{ item }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        <span>已选主板</span>
+        <select name="selected_motherboard">
+          <option value="">不指定</option>
+          {% for item in options.motherboard %}
+          <option value="{{ item }}" {% if form_state.selected_parts.get('主板') == item %}selected{% endif %}>{{ item }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        <span>已选内存</span>
+        <select name="selected_memory">
+          <option value="">不指定</option>
+          {% for item in options.memory %}
+          <option value="{{ item }}" {% if form_state.selected_parts.get('内存') == item %}selected{% endif %}>{{ item }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        <span>已选固态硬盘</span>
+        <select name="selected_storage">
+          <option value="">不指定</option>
+          {% for item in options.storage %}
+          <option value="{{ item }}" {% if form_state.selected_parts.get('固态硬盘') == item %}selected{% endif %}>{{ item }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        <span>已选电源</span>
+        <select name="selected_power">
+          <option value="">不指定</option>
+          {% for item in options.power %}
+          <option value="{{ item }}" {% if form_state.selected_parts.get('电源') == item %}selected{% endif %}>{{ item }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label class="full-width">
+        <span>已选机箱</span>
+        <select name="selected_case">
+          <option value="">不指定</option>
+          {% for item in options.case %}
+          <option value="{{ item }}" {% if form_state.selected_parts.get('机箱') == item %}selected{% endif %}>{{ item }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <button type="submit" class="primary-button">生成结构化搭配</button>
+    </form>
+  </article>
+
+  <article class="card result-panel" id="structuredBuildResultPanel">
+    <div class="section-head">
+      <p class="section-tag">Structured Result</p>
+      <h2>结构化搭配结果</h2>
+    </div>
+    <div id="structuredBuildResult" class="structured-build-scroll">
+      {% if build_payload %}
+      <div class="summary-grid summary-grid-compact">
+        <article class="summary-card">
+          <span>场景</span>
+          <strong>{{ build_payload.usage_label }}</strong>
+        </article>
+        <article class="summary-card">
+          <span>预算</span>
+          <strong>¥ {{ "%.2f"|format(build_payload.budget) }}</strong>
+        </article>
+        <article class="summary-card">
+          <span>方案总价</span>
+          <strong>¥ {{ "%.2f"|format(build_payload.total_price) }}</strong>
+        </article>
+      </div>
+
+      <div class="recommend-grid recommend-grid-single">
+        {% for item in build_payload.results %}
+        <article class="recommend-card">
+          <div class="recommend-card-top">
+            <p class="item-keyword">{{ item.component_type }}</p>
+            <span class="mini-price">¥ {{ "%.2f"|format(item.effective_price) }}</span>
+          </div>
+          <h3>{{ item.component_subtype }}</h3>
+          <p class="item-shop">{{ item.shop or '未提供店铺信息' }}</p>
+          <p class="item-sku">{{ item.sku_name }}</p>
+          {% if item.source_url %}
+          <a class="jump-button" href="{{ item.source_url }}" target="_blank" rel="noopener noreferrer">查看商品</a>
+          {% endif %}
+          <p class="item-reason">{{ item.reason_text }}</p>
+        </article>
+        {% endfor %}
+      </div>
+
+      {% if build_payload.notes %}
+      <div class="note-list">
+        {% for note in build_payload.notes %}
+        <p>{{ note }}</p>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% if build_payload.task_id %}
+      <div class="action-row">
+        <a class="secondary-button" href="{{ url_for('community_publish', source='build', task_id=build_payload.task_id) }}" data-toast="?????????">发布到装机方案社区</a>
+      </div>
+      {% endif %}
+      {% else %}
+      <div class="empty-state build-empty">
+        提交左侧条件后，这里会显示本次结构化搭配结果。
+      </div>
+      {% endif %}
+    </div>
+  </article>
+</section>
+
+<section class="card chat-workspace">
+  <div class="section-head">
+    <p class="section-tag">Build Agent</p>
+    <h2>对话式装机代理</h2>
+  </div>
+
+  <div class="chat-messages chat-messages-large" id="agentConversation"></div>
+
+  <div class="chat-suggestion-list" id="agentSuggestionList">
+    {% for prompt in build_chat_suggestions %}
+    <button type="button" class="suggestion-chip" data-prompt="{{ prompt }}">{{ prompt }}</button>
+    {% endfor %}
+  </div>
+
+  <form class="chat-form" id="agentChatForm">
+    <textarea id="agentMessageInput" rows="3" placeholder="例如：预算 6500，主要玩 3A，已经有 7500F，显卡想强一点。"></textarea>
+    <div class="chat-actions">
+      <button type="button" class="ghost-link" id="agentResetButton" data-toast="??????">重置对话</button>
+      <button type="submit" class="primary-button" id="agentSendButton">发送</button>
+    </div>
+  </form>
+</section>
+
+{% if related_articles %}
+<section class="card">
+  <div class="section-head-inline">
+    <div>
+      <p class="section-tag">Knowledge</p>
+      <h2>装机经验补充阅读</h2>
+    </div>
+    <a class="ghost-link" href="{{ url_for('knowledge_home') }}" data-toast="????????">前往知识中心</a>
+  </div>
+  <div class="mini-stack">
+    {% for article in related_articles %}
+    <a class="knowledge-card" href="{{ url_for('knowledge_article_detail', article_id=article.id) }}" style="text-decoration:none;color:inherit">
+      <div class="knowledge-head">
+        <div>
+          <h3>{{ article.title }}</h3>
+          <div class="meta-line">
+            <span>{{ article.category_name }}</span>
+            <span>{{ article.created_at }}</span>
+          </div>
+        </div>
+      </div>
+      <p class="article-copy">{{ article.summary }}</p>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<script>
+  window.buildAgentConfig = {
+    chatUrl: {{ url_for("api_build_chat")|tojson }},
+    resetUrl: {{ url_for("api_build_chat_reset")|tojson }},
+    suggestions: {{ build_chat_suggestions|tojson }},
+    initialRequirements: {{ chat_state|tojson }}
+  };
+</script>
+<script src="{{ url_for('static', filename='build_agent.js') }}"></script>
+{% endblock %}

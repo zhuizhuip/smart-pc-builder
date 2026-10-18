@@ -1,0 +1,67 @@
+{% extends "portal_base.html" %}
+{% block title %}知识维护{% endblock %}
+{% block page_title %}知识维护{% endblock %}
+{% block content %}
+<section class="split-shell">
+  <section class="card">
+    <div class="section-head">
+      <p class="section-tag">Manage</p>
+      <h2>新增知识文章</h2>
+    </div>
+    <p class="panel-copy">当前功能入口位于左侧导航的“社区中心 / 知识维护”，仅管理员与数据管理员可见。</p>
+    <form method="post" class="form-grid" data-toast-submit="正在发布知识文章">
+      <label>
+        <span>文章标题</span>
+        <input type="text" name="title" required />
+      </label>
+      <label>
+        <span>文章分类</span>
+        <select name="category_id" required>
+          {% for category in categories %}
+          <option value="{{ category.id }}">{{ category.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        <span>文章摘要</span>
+        <input type="text" name="summary" />
+      </label>
+      <label>
+        <span>文章正文</span>
+        <textarea name="content" rows="12" style="width:100%;padding:14px 15px;border-radius:16px;border:1px solid rgba(37, 99, 235, 0.12);background:#f8fbff;color:var(--ink);font:inherit;font-size:14px;line-height:1.7;" required></textarea>
+      </label>
+      <button class="primary-button" type="submit">发布文章</button>
+    </form>
+  </section>
+
+  <aside class="card">
+    <div class="section-head">
+      <p class="section-tag">Existing</p>
+      <h2>已发布文章</h2>
+    </div>
+    {% if articles %}
+    <div class="mini-stack manage-list">
+      {% for article in articles %}
+      <article class="knowledge-card">
+        <div class="knowledge-head">
+          <div>
+            <h3>{{ article.title }}</h3>
+            <div class="meta-line">
+              <span>{{ article.category_name }}</span>
+              <span>{{ article.created_at }}</span>
+            </div>
+          </div>
+          <form class="inline-form" method="post" action="{{ url_for('knowledge_article_delete', article_id=article.id) }}" data-toast-submit="正在删除知识文章" onsubmit="return confirm('确定删除这篇文章吗？')">
+            <button class="secondary-button" type="submit">删除</button>
+          </form>
+        </div>
+        <p class="article-copy">{{ article.summary }}</p>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">当前还没有文章。</div>
+    {% endif %}
+  </aside>
+</section>
+{% endblock %}

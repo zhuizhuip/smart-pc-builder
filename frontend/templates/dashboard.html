@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>电脑配件市场实时可视化大屏</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+</head>
+<body>
+  <div class="screen-shell">
+    <header class="hero">
+      <div>
+        <p class="hero-kicker">Flink + MySQL + WebSocket</p>
+        <h1>实时电脑配件市场可视化与分析大屏</h1>
+        <p class="hero-subtitle">
+          页面按商品小类细分展示。比如内存按容量、显卡按具体型号、散热器按风冷水冷与热管规格展示，
+          避免把不同价格带商品混在同一条均价线上。
+        </p>
+      </div>
+      <div class="hero-side">
+        <label class="keyword-label" for="keywordSelect">观察大类</label>
+        <select id="keywordSelect"></select>
+      </div>
+    </header>
+
+    <section class="metric-grid">
+      <article class="metric-card">
+        <p>采集总记录</p>
+        <strong id="metricSnapshotCount">-</strong>
+        <span>当前全量入库快照</span>
+      </article>
+      <article class="metric-card">
+        <p>大类数量</p>
+        <strong id="metricKeywordCount">-</strong>
+        <span>纠偏后的配件大类</span>
+      </article>
+      <article class="metric-card">
+        <p>当前小类数量</p>
+        <strong id="metricSubtypeCount">-</strong>
+        <span>当前大类下可识别的小类</span>
+      </article>
+      <article class="metric-card">
+        <p>最新采集时间</p>
+        <strong id="metricLatestTime">-</strong>
+        <span>实时链路最新可见时间点</span>
+      </article>
+    </section>
+
+    <section class="board-grid">
+      <article class="panel panel-wide">
+        <div class="panel-head">
+          <div>
+            <p class="panel-tag">Trend</p>
+            <h2 id="trendTitle">小类价格趋势</h2>
+          </div>
+          <span class="panel-note">折线按商品小类区分</span>
+        </div>
+        <div id="trendChart" class="chart"></div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-head">
+          <div>
+            <p class="panel-tag">Subtype</p>
+            <h2 id="subtypeBarTitle">小类均价对比</h2>
+          </div>
+          <span class="panel-note">当前大类下常见小类</span>
+        </div>
+        <div id="subtypeBarChart" class="chart"></div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-head">
+          <div>
+            <p class="panel-tag">Alerts</p>
+            <h2 id="alertTitle">小类价格异常告警</h2>
+          </div>
+          <span class="panel-note">告警按商品小类检测</span>
+        </div>
+        <div id="alertList" class="alert-list"></div>
+      </article>
+
+      <article class="panel panel-tall">
+        <div class="panel-head">
+          <div>
+            <p class="panel-tag">Snapshot</p>
+            <h2 id="productTitle">最新商品快照</h2>
+          </div>
+          <span class="panel-note">按小类和价格排序</span>
+        </div>
+        <div class="table-shell">
+          <table>
+            <thead>
+              <tr>
+                <th>小类</th>
+                <th>店铺</th>
+                <th>商品</th>
+                <th>价格</th>
+                <th>采集时间</th>
+              </tr>
+            </thead>
+            <tbody id="productTableBody"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="panel panel-tall">
+        <div class="panel-head">
+          <div>
+            <p class="panel-tag">Category</p>
+            <h2>大类统计概览</h2>
+          </div>
+          <span class="panel-note">大类与小类数量关系</span>
+        </div>
+        <div class="table-shell">
+          <table>
+            <thead>
+              <tr>
+                <th>大类</th>
+                <th>记录数</th>
+                <th>小类数</th>
+                <th>均价</th>
+                <th>最低价</th>
+                <th>最高价</th>
+              </tr>
+            </thead>
+            <tbody id="keywordTableBody"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="panel panel-placeholder">
+        <div class="panel-head">
+          <div>
+            <p class="panel-tag">Reserved</p>
+            <h2>用户群体雷达图</h2>
+          </div>
+          <span class="panel-note">K-Means + 轮廓系数</span>
+        </div>
+        <div class="placeholder-card">
+          <h3>模块预留</h3>
+          <p>这里保留给用户群体细分雷达图。等后续引入用户行为流和聚类结果后，直接替换当前占位卡片即可。</p>
+        </div>
+      </article>
+
+      <article class="panel panel-placeholder">
+        <div class="panel-head">
+          <div>
+            <p class="panel-tag">Reserved</p>
+            <h2>配件推荐路径桑基图</h2>
+          </div>
+          <span class="panel-note">Apriori 关联规则</span>
+        </div>
+        <div class="placeholder-card">
+          <h3>模块预留</h3>
+          <p>这里保留给 CPU/主板/内存等配件搭配路径。等后续接入历史装机配置后，可直接替换为真实 Sankey 推荐图。</p>
+        </div>
+      </article>
+    </section>
+  </div>
+
+  <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+</body>
+</html>

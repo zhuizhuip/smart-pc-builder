@@ -1,0 +1,128 @@
+{% extends "build_portal_base.html" %}
+{% block title %}智能搭配历史{% endblock %}
+{% block page_title %}搭配历史记录{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="section-head">
+    <p class="section-tag">Build History</p>
+    <h2>智能搭配历史记录</h2>
+  </div>
+  {% if history %}
+  <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+    <button id="deleteAllBuildHistoryButton" class="ghost-link" onclick="deleteAllHistory()" data-toast="??????????" style="border:none;cursor:pointer;color:#ef4444;font-size:13px;font-weight:600">全部删除</button>
+  </div>
+  {% endif %}
+  {% if history %}
+  <div class="history-stack">
+    {% for task in history %}
+    <article class="history-card" data-task-id="{{ task.id }}">
+      <div class="history-head">
+        <div>
+          <h3>#{{ task.id }} {{ task.usage_label }}</h3>
+          <p>{{ task.build_summary }}</p>
+        </div>
+        <div class="history-meta">
+          <strong>预算 ¥ {{ "%.2f"|format(task.budget) }}</strong>
+          <span>方案总价 ¥ {{ "%.2f"|format(task.total_price) }}</span>
+          <span>{{ task.created_at }}</span>
+          <button class="btn-delete-history" onclick="deleteBuildHistory({{ task.id }}, this)" data-toast="????????" title="删除此搭配记录">×</button>
+        </div>
+      </div>
+      <p class="history-note">{{ task.note }}</p>
+      <div class="action-row" style="margin-top:10px">
+        <a class="secondary-button" href="{{ url_for('community_publish', source='build', task_id=task.id) }}" data-toast="?????????">分享至社区</a>
+      </div>
+      <div class="history-result-grid">
+        {% for item in task.results %}
+        <article class="history-result-card">
+          <strong>{{ item.component_type }} / {{ item.component_subtype }}</strong>
+          <span>{{ item.shop or '无店铺名' }}</span>
+          <span>{{ item.sku_name }}</span>
+          <span>¥ {{ "%.2f"|format(item.effective_price) }}</span>
+          {% if item.source_url %}
+          <span><a href="{{ item.source_url }}" target="_blank" rel="noopener noreferrer">打开商品链接</a></span>
+          {% endif %}
+          <span>{{ item.reason_text }}</span>
+        </article>
+        {% endfor %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">还没有生成智能搭配记录。</div>
+  {% endif %}
+</section>
+
+<script>
+async function deleteAllHistory() {
+  if (!confirm('确定要清空全部搭配历史吗？此操作不可撤销。')) return;
+  try {
+    const resp = await fetch('/api/build/history/delete-all', { method: 'POST', headers: {'Content-Type':'application/json'} });
+    const data = await resp.json();
+    if (!resp.ok || !data.ok) { alert(data.error || '删除失败'); return; }
+    document.querySelector('.history-stack').innerHTML = '<div class="empty-state">全部搭配记录已清空。</div>';
+    const deleteButton = document.getElementById('deleteAllBuildHistoryButton');
+    if (deleteButton) deleteButton.remove();
+    window.showAppToast?.('?????????', 'success');
+  } catch(err) { alert('网络错误，请稍后重试'); }
+}
+
+async function deleteBuildHistory(taskId, button) {
+  if (!confirm('确定要删除这条搭配记录吗？此操作不可撤销。')) {
+    return;
+  }
+  try {
+    const resp = await fetch('/api/build/history/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ task_id: taskId }),
+    });
+    const data = await resp.json();
+    if (!resp.ok || !data.ok) {
+      alert(data.error || '删除失败');
+      return;
+    }
+    // 移除该卡片
+    const card = button.closest('.history-card');
+    if (card) {
+      card.style.transition = 'opacity 0.3s';
+      card.style.opacity = '0';
+      setTimeout(() => card.remove(), 300);
+      window.showAppToast?.('???????', 'success');
+    }
+    // 如果全部删完，显示空状态
+    const remaining = document.querySelectorAll('.history-card');
+    if (remaining.length === 0) {
+      const section = document.querySelector('.card');
+      section.innerHTML = '<div class="empty-state">还没有生成智能搭配记录。</div>';
+    }
+  } catch (err) {
+    alert('网络错误，请稍后重试');
+  }
+}
+</script>
+
+<style>
+.btn-delete-history {
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  color: #999;
+  font-size: 18px;
+  font-weight: bold;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  margin-left: 8px;
+  transition: all 0.2s;
+}
+.btn-delete-history:hover {
+  background: #e74c3c;
+  color: #fff;
+  border-color: #e74c3c;
+}
+</style>
+{% endblock %}

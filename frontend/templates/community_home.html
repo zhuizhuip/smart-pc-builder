@@ -1,0 +1,132 @@
+{% extends "portal_base.html" %}
+{% block title %}装机方案社区{% endblock %}
+{% block page_title %}装机方案社区{% endblock %}
+{% block content %}
+<section class="split-shell">
+  <div class="feed-stack">
+    <section class="card">
+      <div class="section-head-inline">
+        <div>
+          <p class="section-tag">Community</p>
+          <h2>看看别人是怎么搭配的</h2>
+        </div>
+        <a class="primary-link" href="{{ url_for('community_publish') }}" data-toast="正在进入发布页面">发布我的方案</a>
+      </div>
+
+      <form method="get" class="form-grid multi-column" style="margin-top:0;margin-bottom:18px" data-toast-submit="正在应用筛选条件">
+        <label>
+          <span>关键词搜索</span>
+          <input type="search" name="q" value="{{ query or '' }}" placeholder="搜索方案标题、简介或发布者" />
+        </label>
+        <label>
+          <span>使用场景</span>
+          <select name="usage">
+            <option value="">全部场景</option>
+            {% for code, profile in usage_options.items() %}
+            <option value="{{ code }}" {% if usage == code %}selected{% endif %}>{{ profile.label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>
+          <span>排序方式</span>
+          <select name="sort">
+            <option value="latest" {% if sort_mode == 'latest' %}selected{% endif %}>最新发布</option>
+            <option value="hot" {% if sort_mode == 'hot' %}selected{% endif %}>热度优先</option>
+          </select>
+        </label>
+        <div style="display:flex;align-items:end;gap:10px">
+          <button class="primary-button" type="submit">应用筛选</button>
+          <a class="ghost-link" href="{{ url_for('community_home') }}" data-toast="正在重置筛选条件">重置</a>
+        </div>
+      </form>
+
+      {% if query or usage or sort_mode != 'latest' %}
+      <div class="pill-row" style="margin-bottom:18px">
+        {% if query %}
+        <span class="filter-pill is-active">关键词：{{ query }}</span>
+        {% endif %}
+        {% if usage %}
+        <span class="filter-pill is-active">场景：{{ usage_options[usage].label if usage in usage_options else usage }}</span>
+        {% endif %}
+        {% if sort_mode == 'hot' %}
+        <span class="filter-pill is-active">排序：热度优先</span>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% if posts %}
+      <div class="feed-stack">
+        {% for post in posts %}
+        <article class="community-card">
+          <div class="community-head">
+            <div>
+              <h3>{{ post.title }}</h3>
+              <div class="meta-line">
+                <span>{{ post.usage_label }}</span>
+                <span>预算 ￥{{ "%.0f"|format(post.budget) }}</span>
+                <span>总价 ￥{{ "%.0f"|format(post.total_price) }}</span>
+              </div>
+            </div>
+            <div class="meta-line">
+              <span>{{ post.author_name }}</span>
+              <span>{{ post.created_at }}</span>
+            </div>
+          </div>
+          <p class="card-copy">{{ post.summary or '该方案暂未填写额外说明。' }}</p>
+          <div class="action-row">
+            <a class="secondary-button" href="{{ url_for('community_post_detail', post_id=post.id) }}" data-toast="正在打开方案详情">查看详情</a>
+            <button class="secondary-button js-toggle-like {% if post.liked %}is-active{% endif %}" type="button" data-url="{{ url_for('community_post_like', post_id=post.id) }}">
+              点赞 {{ post.like_count }}
+            </button>
+            <button class="secondary-button js-toggle-favorite {% if post.favorited %}is-active{% endif %}" type="button" data-url="{{ url_for('community_post_favorite', post_id=post.id) }}">
+              收藏 {{ post.favorite_count }}
+            </button>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">当前筛选条件下还没有方案，可以尝试重置条件或直接发布你的第一套装机方案。</div>
+      {% endif %}
+    </section>
+  </div>
+
+  <aside class="card">
+    <div class="section-head">
+      <p class="section-tag">Guide</p>
+      <h2>使用建议</h2>
+    </div>
+    <div class="mini-stack">
+      <article class="knowledge-card">
+        <h3>从推荐结果一键发布</h3>
+        <p class="article-copy">在推荐页和历史页都可以直接把已有方案发布到社区，不需要重复填写配件明细。</p>
+      </article>
+      <article class="knowledge-card">
+        <h3>从社区导入智能搭配</h3>
+        <p class="article-copy">看到合适的方案后，可以一键导入到智能搭配中心，继续调整预算和部件。</p>
+      </article>
+      <article class="knowledge-card">
+        <h3>建议补充方案说明</h3>
+        <p class="article-copy">说明你优先关注的是性能、静音、颜值还是性价比，方案更容易被其他用户参考。</p>
+      </article>
+    </div>
+  </aside>
+</section>
+
+<script>
+document.querySelectorAll('.js-toggle-like, .js-toggle-favorite').forEach((button) => {
+  button.addEventListener('click', async () => {
+    const resp = await fetch(button.dataset.url, { method: 'POST' });
+    const data = await resp.json();
+    if (!resp.ok || !data.ok) {
+      window.showAppToast?.(data.error || '操作失败', 'error');
+      return;
+    }
+    const isLike = button.classList.contains('js-toggle-like');
+    button.classList.toggle('is-active', data.data.active);
+    button.textContent = `${isLike ? '点赞' : '收藏'} ${isLike ? data.data.like_count : data.data.favorite_count}`;
+    window.showAppToast?.(isLike ? '点赞状态已更新' : '收藏状态已更新', 'success');
+  });
+});
+</script>
+{% endblock %}

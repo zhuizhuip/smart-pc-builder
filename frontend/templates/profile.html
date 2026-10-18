@@ -1,0 +1,46 @@
+{% extends "portal_base.html" %}
+{% block title %}个人中心{% endblock %}
+{% block page_title %}个人中心{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="section-head">
+    <p class="section-tag">Account Info</p>
+    <h2>账号信息</h2>
+  </div>
+  <form method="post" class="form-grid multi-column">
+    <label>
+      <span>显示名称</span>
+      <input type="text" name="display_name" value="{{ current_user.display_name or '' }}" placeholder="用于页面展示" />
+    </label>
+    <label>
+      <span>用户名</span>
+      <input type="text" value="{{ current_user.username }}" disabled style="opacity:0.6" />
+      <span style="font-size:11px;color:var(--muted)">用户名不可修改</span>
+    </label>
+    <label>
+      <span>角色</span>
+      <input type="text" value="{% if current_user.role == 'admin' %}平台管理员{% elif current_user.role == 'data_admin' %}数据管理员{% else %}注册用户{% endif %}" disabled style="opacity:0.6" />
+    </label>
+    <label>
+      <span>注册时间</span>
+      <input type="text" value="{{ current_user.get('created_at', '—') }}" disabled style="opacity:0.6" />
+    </label>
+    <div>
+      <button type="submit" class="primary-button">保存信息</button>
+    </div>
+  </form>
+</section>
+
+<section class="card" style="margin-top:18px">
+  <div class="section-head">
+    <p class="section-tag">Security</p>
+    <h2>修改密码</h2>
+  </div>
+  <form method="post" action="{{ url_for('change_password') }}" class="form-grid" style="max-width:400px">
+    <label><span>当前密码</span><input type="password" name="current_password" required /></label>
+    <label><span>新密码</span><input type="password" name="new_password" required minlength="4" /></label>
+    <label><span>确认新密码</span><input type="password" name="confirm_password" required /></label>
+    <button type="submit" class="primary-button">修改密码</button>
+  </form>
+</section>
+{% endblock %}

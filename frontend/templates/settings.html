@@ -1,0 +1,77 @@
+{% extends "portal_base.html" %}
+{% block title %}系统设置{% endblock %}
+{% block page_title %}系统设置{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="section-head">
+    <p class="section-tag">System Settings</p>
+    <h2>运行与安全配置</h2>
+  </div>
+  <p class="settings-copy">
+    这里展示当前系统的运行配置、刷新策略、安全规则和数据目录。该页面目前为只读说明页，不直接修改线上参数。
+  </p>
+
+  <div class="summary-grid settings-grid">
+    <article class="summary-card">
+      <span>模型接入</span>
+      <strong>{{ settings_payload.model_name }}</strong>
+      <p class="settings-copy">{{ settings_payload.model_provider }}</p>
+    </article>
+    <article class="summary-card">
+      <span>API Key 状态</span>
+      <strong>{{ settings_payload.api_key_status }}</strong>
+      <p class="settings-copy">外部模型服务当前配置状态</p>
+    </article>
+    <article class="summary-card">
+      <span>手动同步冷却</span>
+      <strong>{{ settings_payload.manual_refresh_cooldown }}</strong>
+      <p class="settings-copy">用于限制频繁请求最新批次数据</p>
+    </article>
+  </div>
+</section>
+
+<section class="card settings-layout">
+  <div class="section-head">
+    <p class="section-tag">Policy</p>
+    <h2>账号与数据策略</h2>
+  </div>
+
+  <div class="recommend-grid">
+    <article class="recommend-card">
+      <p class="item-keyword">账号安全</p>
+      <h3>用户名规则</h3>
+      <p class="panel-copy">{{ settings_payload.username_rule }}</p>
+    </article>
+    <article class="recommend-card">
+      <p class="item-keyword">密码安全</p>
+      <h3>密码规则</h3>
+      <p class="panel-copy">{{ settings_payload.password_rule }}</p>
+    </article>
+    <article class="recommend-card">
+      <p class="item-keyword">展示窗口</p>
+      <h3>最近批次范围</h3>
+      <p class="panel-copy">仪表盘默认只展示最近 {{ settings_payload.latest_batch_count }} 组有效批次。</p>
+    </article>
+    <article class="recommend-card">
+      <p class="item-keyword">刷新策略</p>
+      <h3>手动 + 定时刷新</h3>
+      <p class="panel-copy">手动同步只刷新当前库中最新一组数据；定时任务按既定周期写入新批次。</p>
+    </article>
+  </div>
+</section>
+
+<section class="card settings-layout">
+  <div class="section-head">
+    <p class="section-tag">Data Sources</p>
+    <h2>目录与脚本路径</h2>
+  </div>
+  <div class="history-stack">
+    {% for item in settings_payload.data_sources %}
+    <article class="history-result-card">
+      <span>{{ item.label }}</span>
+      <p class="settings-copy">{{ item.path }}</p>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

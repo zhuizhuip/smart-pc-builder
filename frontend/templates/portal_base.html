@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}电脑配件用户中心{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='portal.css') }}" />
+  </head>
+  <body>
+    <div class="portal-layout">
+      <aside class="portal-sidebar">
+        <div class="portal-brand">
+          <p>Account Workspace</p>
+          <h1>电脑配件用户中心</h1>
+        </div>
+
+        <nav class="portal-nav">
+          <a href="{{ url_for('index') }}">
+            <span class="nav-glyph">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="4" y="4" width="6" height="6" rx="1.8"></rect>
+                <rect x="14" y="4" width="6" height="6" rx="1.8"></rect>
+                <rect x="4" y="14" width="6" height="6" rx="1.8"></rect>
+                <rect x="14" y="14" width="6" height="6" rx="1.8"></rect>
+              </svg>
+            </span>
+            <span>公开面板</span>
+          </a>
+          {% if current_user %}
+          <a href="{{ url_for('build_center') }}">
+            <span class="nav-glyph">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 4l2.2 5.2L20 12l-5.8 2.8L12 20l-2.2-5.2L4 12l5.8-2.8L12 4z"></path>
+              </svg>
+            </span>
+            <span>智能搭配</span>
+          </a>
+          <a href="{{ url_for('build_history') }}">
+            <span class="nav-glyph">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 7H3v4"></path>
+                <path d="M4 11a8 8 0 1 0 2.4-5.6L3 7"></path>
+              </svg>
+            </span>
+            <span>搭配历史</span>
+          </a>
+          <a href="{{ url_for('preferences') }}">
+            <span class="nav-glyph">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="8" r="3.2"></circle>
+                <path d="M6 19c1.4-3 3.9-4.5 6-4.5s4.6 1.5 6 4.5"></path>
+              </svg>
+            </span>
+            <span>个人偏好</span>
+          </a>
+          {% if current_user and current_user.role in ('admin', 'data_admin') %}
+          <a href="{{ url_for('admin_panel') }}">
+            <span class="nav-glyph">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.8"/><path d="M19.4 15a1 1 0 0 0 .2 1.1l.2.2a1 1 0 0 1 0 1.4l-1.1 1.1a1 1 0 0 1-1.4 0l-.2-.2a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9v.3a1 1 0 0 1-1 1h-1.6a1 1 0 0 1-1-1v-.3a1 1 0 0 0-.6-.9 1 1 0 0 0-1.1.2l-.2.2a1 1 0 0 1-1.4 0l-1.1-1.1a1 1 0 0 1 0-1.4l.2-.2a1 1 0 0 0 .2-1.1 1 1 0 0 0-.9-.6H4a1 1 0 0 1-1-1v-1.6a1 1 0 0 1 1-1h.3a1 1 0 0 0 .9-.6 1 1 0 0 0-.2-1.1l-.2-.2a1 1 0 0 1 0-1.4l1.1-1.1a1 1 0 0 1 1.4 0l.2.2a1 1 0 0 0 1.1.2 1 1 0 0 0 .6-.9V4a1 1 0 0 1 1-1h1.6a1 1 0 0 1 1 1v.3a1 1 0 0 0 .6.9 1 1 0 0 0 1.1-.2l.2-.2a1 1 0 0 1 1.4 0l1.1 1.1a1 1 0 0 1 0 1.4l-.2.2a1 1 0 0 0-.2 1.1 1 1 0 0 0 .9.6h.3a1 1 0 0 1 1 1v1.6a1 1 0 0 1-1 1h-.3a1 1 0 0 0-.9.6Z"/></svg>
+            </span>
+            <span>系统管理</span>
+          </a>
+          {% endif %}
+          {% endif %}
+        </nav>
+        {% if current_user %}
+        <details class="portal-nav-group" {% if request.endpoint in ['community_home', 'community_post_detail', 'community_publish', 'knowledge_home', 'knowledge_category', 'knowledge_article_detail', 'knowledge_manage'] %}open{% endif %}>
+          <summary class="portal-folder">
+            <span class="nav-glyph">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h3l1.6 1.8h6.4A2.5 2.5 0 0 1 20 9.3v7.2a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z"></path>
+              </svg>
+            </span>
+            <span>社区中心</span>
+            <span class="nav-caret" aria-hidden="true">⌄</span>
+          </summary>
+          <div class="portal-subnav">
+            <a class="portal-sub-link {% if request.endpoint in ['community_home', 'community_post_detail', 'community_publish'] %}is-active{% endif %}" href="{{ url_for('community_home') }}">装机方案社区</a>
+            <a class="portal-sub-link {% if request.endpoint in ['knowledge_home', 'knowledge_category', 'knowledge_article_detail'] %}is-active{% endif %}" href="{{ url_for('knowledge_home') }}">装机经验知识</a>
+            {% if current_user.role in ('admin', 'data_admin') %}
+            <a class="portal-sub-link {% if request.endpoint == 'knowledge_manage' %}is-active{% endif %}" href="{{ url_for('knowledge_manage') }}">知识维护</a>
+            {% endif %}
+          </div>
+        </details>
+        {% endif %}
+
+        <section class="portal-account">
+          {% if current_user %}
+          <div class="account-avatar">
+            {{ (current_user.display_name or current_user.username or 'U')[:1] | upper }}
+          </div>
+          <div class="account-meta">
+            <strong>{{ current_user.display_name or current_user.username }}</strong>
+            <span>{{ current_user.username }}</span>
+          </div>
+          <div class="account-links">
+            <a href="{{ url_for('profile') }}">个人中心</a>
+            <a href="{{ url_for('logout') }}">退出登录</a>
+          </div>
+          {% else %}
+          <div class="account-avatar guest">G</div>
+          <div class="account-meta">
+            <strong>游客模式</strong>
+            <span>登录系统后可解锁更多功能，并保存个人偏好与推荐结果。</span>
+          </div>
+          <div class="account-links">
+            <a href="{{ url_for('login') }}">立即登录</a>
+            <a href="{{ url_for('register') }}">注册账号</a>
+          </div>
+          {% endif %}
+        </section>
+      </aside>
+
+      <main class="portal-main">
+        <header class="portal-topbar">
+          <div class="portal-topbar-title">
+            <p class="section-tag">User Center</p>
+            <h2>{% block page_title %}{% endblock %}</h2>
+          </div>
+          <div class="portal-topbar-actions">
+            <a class="ghost-link" href="{{ url_for('index') }}">返回公开面板</a>
+            {% if current_user %}
+            <a class="primary-link" href="{{ url_for('logout') }}">退出登录</a>
+            {% endif %}
+          </div>
+        </header>
+
+        <section class="portal-shell">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+          <section class="flash-stack">
+            {% for category, message in messages %}
+            <article class="flash-item flash-{{ category }}">{{ message }}</article>
+            {% endfor %}
+          </section>
+          {% endif %}
+          {% endwith %}
+
+          {% block content %}{% endblock %}
+        </section>
+      </main>
+    </div>
+  </body>
+  <script>
+    (() => {
+      const toastLayer = document.createElement('div');
+      toastLayer.className = 'toast-layer';
+      document.body.appendChild(toastLayer);
+
+      window.showAppToast = (message, tone = 'info', duration = 1800) => {
+        if (!message) return;
+        const toast = document.createElement('div');
+        toast.className = `app-toast app-toast-${tone}`;
+        toast.textContent = message;
+        toastLayer.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('is-visible'));
+        window.setTimeout(() => {
+          toast.classList.remove('is-visible');
+          window.setTimeout(() => toast.remove(), 220);
+        }, duration);
+      };
+
+      document.querySelectorAll('.flash-item').forEach((item, index) => {
+        const tone = item.classList.contains('flash-error') ? 'error' : 'success';
+        window.setTimeout(() => window.showAppToast(item.textContent.trim(), tone, 2200), index * 180);
+        item.remove();
+      });
+
+      document.addEventListener('click', (event) => {
+        const trigger = event.target.closest('[data-toast]');
+        if (!trigger) return;
+        window.showAppToast(trigger.dataset.toast, trigger.dataset.toastTone || 'info');
+      });
+
+      document.addEventListener('submit', (event) => {
+        const form = event.target.closest('form[data-toast-submit]');
+        if (!form) return;
+        window.showAppToast(form.dataset.toastSubmit || '正在提交…', form.dataset.toastTone || 'info');
+      });
+    })();
+  </script>
+</html>

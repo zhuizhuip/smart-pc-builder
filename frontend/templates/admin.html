@@ -1,0 +1,558 @@
+{% extends "portal_base.html" %}
+{% block title %}系统管理{% endblock %}
+{% block page_title %}系统管理{% endblock %}
+{% block content %}
+<style>
+.admin-wrap{display:grid;gap:18px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:10px;font-size:12px;font-weight:700}
+.badge.admin{background:rgba(37,99,235,.08);color:var(--accent)}
+.badge.data{background:rgba(20,184,166,.08);color:var(--teal)}
+.tab-bar{display:flex;gap:6px;flex-wrap:wrap}
+.tab-btn{padding:7px 16px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+.tab-btn:hover{border-color:var(--accent);color:var(--accent)}
+.tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.search-group{display:flex;gap:8px;align-items:center}
+.search-group input{padding:8px 14px;border:1px solid var(--line);border-radius:10px;font-size:13px;background:var(--bg);outline:none;width:220px}
+.search-group select{padding:8px 12px;border:1px solid var(--line);border-radius:10px;font-size:13px;background:var(--bg);outline:none;min-width:120px;color:var(--ink)}
+.search-group input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.search-group select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.btn{padding:8px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:.15s;white-space:nowrap}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-2)}
+.btn-outline{background:var(--panel);color:var(--muted);border:1px solid var(--line)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{background:#fef2f2;color:#ef4444;border:1px solid #fecaca}
+.btn-danger:hover{background:#fee2e2}
+.btn-sm{padding:5px 10px;border-radius:7px;font-size:12px}
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{padding:10px 14px;text-align:left;font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em;background:#f8fafc;border-bottom:2px solid var(--line)}
+.data-table td{padding:10px 14px;font-size:13px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.data-table tr:hover td{background:rgba(37,99,235,.025)}
+.data-table td:last-child{text-align:right;white-space:nowrap}
+.pagination{display:flex;justify-content:center;gap:6px;margin-top:12px}
+.page-btn{padding:5px 11px;border-radius:7px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-size:12px;cursor:pointer}
+.page-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.param-row{display:flex;align-items:center;gap:12px;margin-bottom:11px;padding:10px 14px;border-radius:12px;background:var(--panel-soft);border:1px solid var(--line)}
+.param-row:hover{border-color:var(--accent)}
+.param-label{min-width:180px;font-size:13px;font-weight:500}
+.param-input{width:110px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:var(--bg);outline:none;text-align:center}
+.param-input:focus{border-color:var(--accent)}
+.param-fb{font-size:12px;color:var(--teal);display:none;min-width:50px}
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.4);display:flex;align-items:center;justify-content:center;z-index:999}
+.modal-box{background:var(--panel);border-radius:var(--radius-lg);padding:28px;width:420px;box-shadow:var(--shadow)}
+.modal-box h3{margin:0 0 18px;font-size:18px}
+.modal-field{display:grid;gap:6px;margin-bottom:12px}
+.modal-field span{font-size:13px;font-weight:600}
+.modal-field input,.modal-field select{padding:9px 12px;border:1px solid var(--line);border-radius:10px;font-size:13px;background:var(--bg);outline:none}
+.modal-field textarea{padding:9px 12px;border:1px solid var(--line);border-radius:10px;font-size:13px;background:var(--bg);outline:none;resize:vertical;min-height:92px;font-family:inherit}
+.modal-field input:focus,.modal-field select:focus,.modal-field textarea:focus{border-color:var(--accent)}
+.modal-box.wide{width:min(860px,92vw)}
+.detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px}
+.detail-grid .modal-field.full{grid-column:1 / -1}
+.compact-select{min-width:110px}
+.table-badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.table-badge.ok{background:rgba(20,184,166,.08);color:var(--teal)}
+.table-badge.warn{background:#fef2f2;color:#ef4444;border:1px solid #fecaca}
+.sku-cell{max-width:360px;line-height:1.45;word-break:break-word}
+.sku-meta{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+.subtle-help{color:var(--muted);font-size:12px}
+.compact-textarea{min-height:92px}
+.section-panel{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,#fff,rgba(248,250,252,.88));overflow:hidden}
+.section-panel-header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);gap:12px}
+.section-panel-title{display:grid;gap:4px}
+.section-panel-title strong{font-size:14px}
+.section-panel-body{padding:14px 16px}
+.section-panel.collapsed .section-panel-body{display:none}
+.section-panel.collapsed .section-panel-header{border-bottom:none}
+.ghost-link{background:none;border:none;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;padding:0}
+.products-summary{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.stat-chip{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;background:rgba(37,99,235,.08);color:var(--accent);font-size:12px;font-weight:700}
+.product-footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:10px;flex-wrap:wrap}
+.page-ellipsis{display:inline-flex;align-items:center;padding:0 6px;color:var(--muted);font-size:12px}
+.toast{position:fixed;top:20px;right:20px;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;z-index:9999;box-shadow:var(--shadow);transition:.3s}
+.toast.success{background:#ecfdf5;color:#059669;border:1px solid #a7f3d0}
+.toast.error{background:#fef2f2;color:#ef4444;border:1px solid #fecaca}
+@media (max-width:720px){
+  .detail-grid{grid-template-columns:1fr}
+  .search-group{width:100%}
+  .search-group input,.search-group select{width:100%}
+  .sku-cell{max-width:none}
+  .section-panel-header,.product-footer{align-items:flex-start}
+}
+</style>
+
+<div class="admin-wrap">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <div>
+      <span class="badge {{ 'admin' if user_role=='admin' else 'data' }}">{{ '平台管理员' if user_role=='admin' else '数据管理员' }}</span>
+      <span style="margin-left:10px;color:var(--muted);font-size:12px">{{ '用户管理 · 系统参数 · 推荐策略 · 配件商品' if user_role=='admin' else '数据配置 · 配件商品 · 告警核查' }}</span>
+    </div>
+  </div>
+
+  <div class="tab-bar" id="adminTabs">
+    {% if user_role == 'admin' %}
+    <button class="tab-btn active" data-tab="users">用户管理</button>
+    <button class="tab-btn" data-tab="params">系统参数</button>
+    {% endif %}
+    <button class="tab-btn {{ 'active' if user_role!='admin' }}" data-tab="strategy">推荐策略</button>
+    {% if user_role == 'data_admin' %}
+    <button class="tab-btn" data-tab="datacfg">数据配置</button>
+    {% endif %}
+    <button class="tab-btn" data-tab="products">配件商品</button>
+    <button class="tab-btn" data-tab="alerts">告警核查</button>
+  </div>
+
+  <!-- ══════ 用户管理 ══════ -->
+  {% if user_role == 'admin' %}
+  <div class="card tab-content" id="tab-users" style="display:block;padding:18px 20px">
+    <div class="toolbar">
+      <div class="search-group">
+        <input type="text" id="userSearch" placeholder="请输入用户名或ID" />
+        <button class="btn btn-primary btn-sm" id="btnSearch">搜索</button>
+        <button class="btn btn-outline btn-sm" id="btnClearSearch">重置</button>
+      </div>
+      <button class="btn btn-primary" id="btnAddUser">+ 添加用户</button>
+    </div>
+    <table class="data-table" id="usersTable">
+      <thead><tr><th>ID</th><th>用户名</th><th>角色</th><th>注册时间</th><th>偏好场景</th><th style="text-align:right">操作</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+      <span id="usersCount" style="color:var(--muted);font-size:12px"></span>
+      <div class="pagination" id="usersPagination"></div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ══════ 系统参数 ══════ -->
+  {% if user_role == 'admin' %}
+  <div class="card tab-content" id="tab-params" style="display:none;padding:18px 20px">
+    <p style="color:var(--muted);font-size:12px;margin-bottom:12px">以下参数保存后立即生效，无需重启服务。</p>
+    <div id="paramsList"></div>
+  </div>
+  {% endif %}
+
+  <!-- ══════ 推荐策略 ══════ -->
+  <div class="card tab-content" id="tab-strategy" style="display:{{ 'none' if user_role=='admin' else 'block' }};padding:18px 20px">
+    <div id="strategyList"></div>
+    <p id="weightSum" style="color:var(--muted);font-size:12px;margin-top:8px"></p>
+  </div>
+
+  <!-- ══════ 数据配置 ══════ -->
+  {% if user_role == 'data_admin' %}
+  <div class="card tab-content" id="tab-datacfg" style="display:none;padding:18px 20px">
+    <div id="dataCfgList"></div>
+  </div>
+  {% endif %}
+
+  <!-- ══════ 配件商品 ══════ -->
+  <div class="card tab-content" id="tab-products" style="display:none;padding:18px 20px">
+    <div class="section-panel" id="productsFilterPanel">
+      <div class="section-panel-header">
+        <div class="section-panel-title">
+          <strong>筛选与核查条件</strong>
+          <span class="subtle-help">按关键字、标题、店铺和数据状态快速定位商品。</span>
+        </div>
+        <button class="ghost-link" id="btnToggleProductFilters">收起筛选</button>
+      </div>
+      <div class="section-panel-body">
+        <div class="search-group">
+          <input type="text" id="productSearch" placeholder="搜索商品标题或店铺" />
+          <select id="productKeyword" class="compact-select">
+            <option value="">全部关键字</option>
+          </select>
+          <select id="productDirty" class="compact-select">
+            <option value="">全部状态</option>
+            <option value="0">正常</option>
+            <option value="1">脏数据</option>
+          </select>
+          <button class="btn btn-primary btn-sm" id="btnProductSearch">搜索</button>
+          <button class="btn btn-outline btn-sm" id="btnProductClear">重置</button>
+        </div>
+      </div>
+    </div>
+    <div class="toolbar" style="margin:14px 0 12px">
+      <div class="products-summary">
+        <span class="stat-chip">商品快照核查</span>
+        <span class="subtle-help">支持查看分类结果、价格状态与来源链接。</span>
+      </div>
+    </div>
+    <table class="data-table" id="productsTable">
+      <thead><tr><th>ID</th><th>关键字</th><th>商品</th><th>子类型</th><th>价格</th><th>状态</th><th>采集时间</th><th style="text-align:right">操作</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="product-footer">
+      <span id="productsCount" style="color:var(--muted);font-size:12px"></span>
+      <div class="pagination" id="productsPagination"></div>
+    </div>
+  </div>
+
+  <!-- ══════ 告警核查 ══════ -->
+  <div class="card tab-content" id="tab-alerts" style="display:none;padding:18px 20px">
+    <table class="data-table" id="alertsTable">
+      <thead><tr><th>ID</th><th>品类</th><th>型号</th><th>上期均价</th><th>最新均价</th><th>变动</th><th>级别</th><th>时间</th><th style="text-align:right">操作</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 用户弹窗 -->
+<div class="modal-overlay" id="userModal" style="display:none">
+  <div class="modal-box">
+    <h3 id="modalTitle">添加用户</h3>
+    <div class="modal-field"><span>用户名</span><input type="text" id="modalUsername" /></div>
+    <div class="modal-field" id="modalPwdField" style="display:none"><span>密码</span><input type="password" id="modalPassword" placeholder="请输入密码" /></div>
+    <div class="modal-field"><span>角色</span>
+      <select id="modalRole"><option value="member">注册用户</option><option value="admin">平台管理员</option><option value="data_admin">数据管理员</option></select>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:18px;justify-content:flex-end">
+      <button class="btn btn-outline" id="btnModalCancel">取消</button>
+      <button class="btn btn-primary" id="btnModalSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 商品弹窗 -->
+<div class="modal-overlay" id="productModal" style="display:none">
+  <div class="modal-box wide">
+    <h3>配件商品核查</h3>
+    <div class="detail-grid">
+      <div class="modal-field"><span>关键字</span><input type="text" id="productModalKeyword" /></div>
+      <div class="modal-field"><span>来源平台</span><input type="text" id="productModalPlatform" /></div>
+      <div class="modal-field full"><span>商品标题</span><input type="text" id="productModalSku" /></div>
+      <div class="modal-field"><span>店铺名称</span><input type="text" id="productModalShop" /></div>
+      <div class="modal-field"><span>采集时间</span><input type="text" id="productModalTime" disabled /></div>
+      <div class="modal-field full"><span>商品链接</span><input type="text" id="productModalUrl" disabled /></div>
+      <div class="modal-field"><span>商品子类型</span><input type="text" id="productModalSubtype" /></div>
+      <div class="modal-field"><span>脏数据状态</span>
+        <select id="productModalDirty">
+          <option value="0">正常</option>
+          <option value="1">脏数据</option>
+        </select>
+      </div>
+      <div class="modal-field"><span>一级类目</span><input type="text" id="productModalC1" /></div>
+      <div class="modal-field"><span>二级类目</span><input type="text" id="productModalC2" /></div>
+      <div class="modal-field"><span>三级类目</span><input type="text" id="productModalC3" /></div>
+      <div class="modal-field"><span>四级类目</span><input type="text" id="productModalC4" /></div>
+      <div class="modal-field full"><span>分类备注</span><textarea id="productModalRemark" class="compact-textarea"></textarea></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:18px;justify-content:flex-end">
+      <button class="btn btn-outline" id="btnProductModalCancel">取消</button>
+      <button class="btn btn-outline" id="btnProductOpenLink">打开链接</button>
+      <button class="btn btn-primary" id="btnProductModalSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+var currentTab='{{ "users" if user_role=="admin" else "strategy" }}'
+var query='',page=1,allUsers=[],editingId=null,pageSize=10
+var productQuery='',productKeyword='',productDirty='',productPage=1,productPageSize=10,productKeywords=[],productEditingId=0,productCurrentUrl=''
+
+function toast(msg,type){
+  type=type||'success';var t=document.createElement('div');t.className='toast '+type;t.textContent=msg
+  document.body.appendChild(t);setTimeout(function(){t.remove()},2500)
+}
+
+// Tab
+document.getElementById('adminTabs').addEventListener('click',function(e){
+  if(!e.target.classList.contains('tab-btn'))return;var tab=e.target.dataset.tab;currentTab=tab
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active')});e.target.classList.add('active')
+  document.querySelectorAll('.tab-content').forEach(function(p){p.style.display='none'})
+  var p=document.getElementById('tab-'+tab);if(p)p.style.display='block'
+  if(tab==='users')loadUsers();if(tab==='products')loadProducts();if(tab==='alerts')loadAlerts()
+})
+
+// ===== 参数渲染 =====
+var paramDefs={
+  refresh_cooldown_seconds:{label:'手动刷新冷却时间 (秒)',min:10,max:600,step:1,category:'params'},
+  apriori_min_support:{label:'Apriori 最小支持度',min:1,max:100,step:1,category:'strategy'},
+  apriori_min_confidence:{label:'Apriori 最小置信度',min:0.01,max:1,step:0.01,category:'strategy'},
+  recommend_candidate_count:{label:'推荐候选数量上限',min:3,max:50,step:1,category:'strategy'},
+  price_score_weight:{label:'价格匹配度权重',min:0,max:1,step:0.05,category:'strategy'},
+  popularity_score_weight:{label:'市场热度权重',min:0,max:1,step:0.05,category:'strategy'},
+  brand_score_weight:{label:'品牌偏好权重',min:0,max:1,step:0.05,category:'strategy'},
+  keyword_score_weight:{label:'关键词偏好权重',min:0,max:1,step:0.05,category:'strategy'},
+  alert_medium_threshold:{label:'中等告警阈值 (≥)',min:0.01,max:1,step:0.01,category:'datacfg'},
+  alert_high_threshold:{label:'严重告警阈值 (≥)',min:0.01,max:1,step:0.01,category:'datacfg'},
+  discount_max_rate:{label:'折扣率上限 (倍)',min:0.5,max:5,step:0.1,category:'datacfg'},
+  archive_keep_batches:{label:'归档保留批次数',min:3,max:100,step:1,category:'datacfg'},
+}
+
+var defaultValues={}
+try{var c=JSON.parse('{{ admin_payload.configs|tojson|safe }}');if(c)Object.assign(defaultValues,c)}catch(e){}
+
+function renderParamRow(key,def){
+  var val=defaultValues[key]||''
+  return '<div class="param-row"><span class="param-label">'+def.label+'</span>'+
+    '<input type="number" class="param-input" data-config="'+key+'" value="'+val+'" min="'+def.min+'" max="'+def.max+'" step="'+def.step+'" />'+
+    '<button class="btn btn-primary btn-sm save-btn" data-key="'+key+'">保存</button>'+
+    '<span class="param-fb" data-fb="'+key+'">已保存</span></div>'
+}
+
+function renderCategory(cat,containerId){
+  var html='';Object.keys(paramDefs).forEach(function(k){if(paramDefs[k].category===cat)html+=renderParamRow(k,paramDefs[k])})
+  var el=document.getElementById(containerId);if(el)el.innerHTML=html
+}
+renderCategory('params','paramsList')
+renderCategory('strategy','strategyList')
+renderCategory('datacfg','dataCfgList')
+
+// ===== 保存 =====
+document.addEventListener('click',function(e){
+  if(!e.target.classList.contains('save-btn'))return
+  var btn=e.target,key=btn.dataset.key,inp=document.querySelector('[data-config="'+key+'"]')
+  if(!inp)return;var val=inp.value,fb=document.querySelector('[data-fb="'+key+'"]')
+  btn.textContent='···';btn.disabled=true
+  fetch('/api/admin/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:key,value:val})})
+    .then(function(r){return r.json()}).then(function(d){
+      if(d.ok){btn.textContent='保存';if(fb){fb.style.display='inline';setTimeout(function(){fb.style.display='none'},2000)};toast(((paramDefs[key]&&paramDefs[key].label)||key)+' 保存成功')}
+      else{btn.textContent='保存';toast(d.error||'失败','error')}
+    }).catch(function(){btn.textContent='保存'}).finally(function(){btn.disabled=false})
+})
+
+// ===== 权重合计 =====
+var wk=['price_score_weight','popularity_score_weight','brand_score_weight','keyword_score_weight']
+function updateWeight(){
+  var s=0;wk.forEach(function(k){var inp=document.querySelector('[data-config="'+k+'"]');if(inp)s+=parseFloat(inp.value)||0})
+  var el=document.getElementById('weightSum');if(el){el.textContent='权重合计：'+s.toFixed(2);el.style.color=Math.abs(s-1)<0.01?'var(--teal)':'#ef4444'}
+}
+document.addEventListener('input',function(e){if(wk.indexOf(e.target.dataset.config)>=0)updateWeight()})
+updateWeight()
+
+// ===== 用户管理 =====
+function loadUsers(){
+  fetch('/api/admin/users',{credentials:'same-origin'}).then(function(r){return r.json()}).then(function(d){
+    if(!d.ok)return;allUsers=d.data.users||[];renderUsers()
+  })
+}
+function renderUsers(){
+  var q=query.toLowerCase(),filtered=allUsers.filter(function(u){if(!q)return true;return String(u.id).indexOf(q)!==-1||u.username.toLowerCase().indexOf(q)!==-1})
+  var total=filtered.length,totalPages=Math.ceil(total/pageSize)||1;if(page>totalPages)page=totalPages
+  var start=(page-1)*pageSize,pageData=filtered.slice(start,start+pageSize)
+  var rm={member:'注册用户',admin:'平台管理员',data_admin:'数据管理员'}
+  var ul={gaming:'游戏电竞',office:'办公学习',design:'设计创作',streaming:'直播剪辑','':'未设置'}
+  var tbody=document.querySelector('#usersTable tbody')
+  tbody.innerHTML=pageData.map(function(u){return '<tr><td>'+u.id+'</td><td>'+u.username+'</td><td>'+rm[u.role]+'</td><td>'+(u.created_at||'')+'</td><td>'+(ul[u.usage_pref]||'未设置')+'</td><td style="text-align:right"><button class="btn btn-outline btn-sm editUser" data-uid="'+u.id+'" style="margin-right:4px">编辑</button><button class="btn btn-outline btn-sm resetPwd" data-uid="'+u.id+'" style="margin-right:4px;color:#f59e0b;border-color:#fde68a">重置密码</button><button class="btn btn-danger btn-sm deleteUser" data-uid="'+u.id+'">删除</button></td></tr>'}).join('')
+  if(!pageData.length)tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">无匹配用户</td></tr>'
+  document.getElementById('usersCount').textContent='共 '+total+' 条'
+  var pg=document.getElementById('usersPagination'),ph=''
+  for(var i=1;i<=totalPages;i++)ph+='<button class="page-btn'+(i===page?' active':'')+'" data-page="'+i+'">'+i+'</button>'
+  pg.innerHTML=ph;pg.querySelectorAll('.page-btn').forEach(function(b){b.addEventListener('click',function(){page=parseInt(b.dataset.page);renderUsers()})})
+  tbody.querySelectorAll('.editUser').forEach(function(b){b.addEventListener('click',function(){openEdit(parseInt(b.dataset.uid))})})
+  tbody.querySelectorAll('.resetPwd').forEach(function(b){b.addEventListener('click',function(){if(!confirm('确认重置该用户密码为 Xl666666？'))return;fetch('/api/admin/users/reset-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:parseInt(b.dataset.uid)})}).then(function(r){return r.json()}).then(function(d){if(d.ok){toast('密码已重置为 Xl666666')}else toast(d.error,'error')})})})
+  tbody.querySelectorAll('.deleteUser').forEach(function(b){b.addEventListener('click',function(){if(!confirm('确认删除该用户？'))return;fetch('/api/admin/users/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:parseInt(b.dataset.uid)})}).then(function(r){return r.json()}).then(function(d){if(d.ok){toast('已删除');loadUsers()}else toast(d.error,'error')})})})
+}
+var btnSearch=document.getElementById('btnSearch')
+if(btnSearch)btnSearch.addEventListener('click',function(){query=document.getElementById('userSearch').value.trim();page=1;renderUsers()})
+var btnClearSearch=document.getElementById('btnClearSearch')
+if(btnClearSearch)btnClearSearch.addEventListener('click',function(){document.getElementById('userSearch').value='';query='';page=1;renderUsers()})
+var userSearchInput=document.getElementById('userSearch')
+if(userSearchInput)userSearchInput.addEventListener('keydown',function(e){if(e.key==='Enter'){query=this.value.trim();page=1;renderUsers()}})
+var btnAddUser=document.getElementById('btnAddUser')
+if(btnAddUser)btnAddUser.addEventListener('click',function(){editingId=null;document.getElementById('modalTitle').textContent='添加用户';document.getElementById('modalUsername').value='';document.getElementById('modalPassword').value='';document.getElementById('modalPwdField').style.display='block';document.getElementById('modalRole').value='member';document.getElementById('userModal').style.display='flex'})
+function openEdit(uid){var u=allUsers.find(function(x){return x.id===uid});if(!u)return;editingId=uid;document.getElementById('modalTitle').textContent='编辑用户 #'+uid;document.getElementById('modalUsername').value=u.username;document.getElementById('modalPassword').value='';document.getElementById('modalPwdField').style.display='none';document.getElementById('modalRole').value=u.role;document.getElementById('userModal').style.display='flex'}
+var btnModalCancel=document.getElementById('btnModalCancel')
+if(btnModalCancel)btnModalCancel.addEventListener('click',function(){document.getElementById('userModal').style.display='none'})
+var btnModalSave=document.getElementById('btnModalSave')
+if(btnModalSave)btnModalSave.addEventListener('click',function(){
+  var uname=document.getElementById('modalUsername').value.trim(),pwd=document.getElementById('modalPassword').value,role=document.getElementById('modalRole').value
+  if(!uname){toast('请输入用户名','error');return}
+  var btn=document.getElementById('btnModalSave');btn.textContent='...';btn.disabled=true
+  if(editingId){
+    var body={id:editingId,role:role,username:uname}
+    fetch('/api/admin/users/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+      .then(function(r){return r.json()}).then(function(d){if(d.ok){toast('修改成功');document.getElementById('userModal').style.display='none';loadUsers()}else toast(d.error,'error')}).finally(function(){btn.textContent='保存';btn.disabled=false})
+  }else{
+    if(!pwd){toast('请输入密码','error');btn.textContent='保存';btn.disabled=false;return}
+    fetch('/api/admin/users/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:uname,password:pwd,role:role})})
+      .then(function(r){return r.json()}).then(function(d){if(d.ok){toast('创建成功');document.getElementById('userModal').style.display='none';loadUsers()}else toast(d.error,'error')}).finally(function(){btn.textContent='保存';btn.disabled=false})
+  }
+})
+
+// ===== 配件商品 =====
+function fillProductKeywordOptions(){
+  var sel=document.getElementById('productKeyword')
+  if(!sel)return
+  var current=productKeyword||''
+  sel.innerHTML='<option value="">全部关键字</option>'+productKeywords.map(function(k){return '<option value="'+k+'">'+k+'</option>'}).join('')
+  sel.value=current
+}
+
+function buildCompactPages(current,totalPages){
+  var pages=[],lastAdded=0
+  function addPage(p){
+    if(p<1||p>totalPages)return
+    if(lastAdded && p-lastAdded>1)pages.push('ellipsis')
+    if(lastAdded!==p){pages.push(p);lastAdded=p}
+  }
+  addPage(1)
+  for(var p=current-1;p<=current+1;p++)addPage(p)
+  addPage(totalPages)
+  return pages
+}
+
+function loadProducts(){
+  var params=new URLSearchParams({page:String(productPage),page_size:String(productPageSize)})
+  if(productQuery)params.set('query',productQuery)
+  if(productKeyword)params.set('keyword',productKeyword)
+  if(productDirty!=='')params.set('dirty',productDirty)
+  fetch('/api/admin/products?'+params.toString(),{credentials:'same-origin'}).then(function(r){return r.json()}).then(function(d){
+    if(!d.ok){toast(d.error||'加载商品失败','error');return}
+    productKeywords=d.data.keywords||productKeywords
+    fillProductKeywordOptions()
+    renderProducts(d.data.items||[],d.data.pagination||{page:1,total:0,total_pages:1})
+  }).catch(function(){toast('加载商品失败','error')})
+}
+
+function renderProducts(items,pagination){
+  var tbody=document.querySelector('#productsTable tbody')
+  tbody.innerHTML=items.map(function(item){
+    var price='¥'+Number(item.effective_price||0).toFixed(2)
+    var badge=item.is_dirty_data?'<span class="table-badge warn">脏数据</span>':'<span class="table-badge ok">正常</span>'
+    var subtype=item.product_subtype||'<span style="color:var(--muted)">未分类</span>'
+    var meta=[]
+    if(item.shop)meta.push(item.shop)
+    if(item.category_label)meta.push(item.category_label)
+    return '<tr>'+
+      '<td>'+item.id+'</td>'+
+      '<td>'+(item.keyword||'')+'</td>'+
+      '<td class="sku-cell">'+(item.sku_name||'')+(meta.length?'<span class="sku-meta">'+meta.join(' · ')+'</span>':'')+'</td>'+
+      '<td>'+subtype+'</td>'+
+      '<td>'+price+'</td>'+
+      '<td>'+badge+'</td>'+
+      '<td>'+(item.crawl_time||'')+'</td>'+
+      '<td style="text-align:right"><button class="btn btn-outline btn-sm editProduct" data-pid="'+item.id+'">核查编辑</button></td>'+
+      '</tr>'
+  }).join('')
+  if(!items.length)tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">暂无匹配商品</td></tr>'
+  document.getElementById('productsCount').textContent='共 '+(pagination.total||0)+' 条 · 当前第 '+(pagination.page||1)+' / '+(pagination.total_pages||1)+' 页'
+  var totalPages=pagination.total_pages||1
+  var pg=document.getElementById('productsPagination'),html=''
+  if(totalPages>1){
+    html+='<button class="page-btn" data-page="'+Math.max((pagination.page||1)-1,1)+'" '+((pagination.page||1)<=1?'disabled':'')+'>上一页</button>'
+    buildCompactPages(pagination.page||1,totalPages).forEach(function(token){
+      if(token==='ellipsis')html+='<span class="page-ellipsis">...</span>'
+      else html+='<button class="page-btn'+(token===(pagination.page||1)?' active':'')+'" data-page="'+token+'">'+token+'</button>'
+    })
+    html+='<button class="page-btn" data-page="'+Math.min((pagination.page||1)+1,totalPages)+'" '+((pagination.page||1)>=totalPages?'disabled':'')+'>下一页</button>'
+  }
+  pg.innerHTML=html
+  pg.querySelectorAll('.page-btn').forEach(function(b){b.addEventListener('click',function(){productPage=parseInt(b.dataset.page);loadProducts()})})
+  tbody.querySelectorAll('.editProduct').forEach(function(b){b.addEventListener('click',function(){openProductModal(parseInt(b.dataset.pid))})})
+}
+
+function openProductModal(productId){
+  fetch('/api/admin/products/detail?id='+productId,{credentials:'same-origin'}).then(function(r){return r.json()}).then(function(d){
+    if(!d.ok){toast(d.error||'加载详情失败','error');return}
+    var item=d.data||{}
+    productEditingId=item.id||0
+    productCurrentUrl=item.source_url||''
+    document.getElementById('productModalKeyword').value=item.keyword||''
+    document.getElementById('productModalPlatform').value=item.source_platform||''
+    document.getElementById('productModalSku').value=item.sku_name||''
+    document.getElementById('productModalShop').value=item.shop||''
+    document.getElementById('productModalTime').value=item.crawl_time||''
+    document.getElementById('productModalUrl').value=item.source_url||''
+    document.getElementById('productModalSubtype').value=item.product_subtype||''
+    document.getElementById('productModalC1').value=item.category_level1||''
+    document.getElementById('productModalC2').value=item.category_level2||''
+    document.getElementById('productModalC3').value=item.category_level3||''
+    document.getElementById('productModalC4').value=item.category_level4||''
+    document.getElementById('productModalRemark').value=item.category_remark||''
+    document.getElementById('productModalDirty').value=String(item.is_dirty_data||0)
+    document.getElementById('productModal').style.display='flex'
+  }).catch(function(){toast('加载详情失败','error')})
+}
+
+document.getElementById('btnProductSearch').addEventListener('click',function(){
+  productQuery=document.getElementById('productSearch').value.trim()
+  productKeyword=document.getElementById('productKeyword').value
+  productDirty=document.getElementById('productDirty').value
+  productPage=1
+  loadProducts()
+})
+document.getElementById('btnProductClear').addEventListener('click',function(){
+  document.getElementById('productSearch').value=''
+  document.getElementById('productKeyword').value=''
+  document.getElementById('productDirty').value=''
+  productQuery='';productKeyword='';productDirty='';productPage=1
+  loadProducts()
+})
+document.getElementById('productSearch').addEventListener('keydown',function(e){
+  if(e.key==='Enter'){
+    productQuery=this.value.trim()
+    productKeyword=document.getElementById('productKeyword').value
+    productDirty=document.getElementById('productDirty').value
+    productPage=1
+    loadProducts()
+  }
+})
+document.getElementById('btnToggleProductFilters').addEventListener('click',function(){
+  var panel=document.getElementById('productsFilterPanel')
+  panel.classList.toggle('collapsed')
+  this.textContent=panel.classList.contains('collapsed')?'展开筛选':'收起筛选'
+})
+document.getElementById('btnProductModalCancel').addEventListener('click',function(){
+  document.getElementById('productModal').style.display='none'
+})
+document.getElementById('btnProductOpenLink').addEventListener('click',function(){
+  if(productCurrentUrl)window.open(productCurrentUrl,'_blank')
+  else toast('当前商品没有来源链接','error')
+})
+document.getElementById('btnProductModalSave').addEventListener('click',function(){
+  if(!productEditingId){toast('缺少商品编号','error');return}
+  var btn=this
+  btn.textContent='保存中...'
+  btn.disabled=true
+  var payload={
+    id:productEditingId,
+    keyword:document.getElementById('productModalKeyword').value.trim(),
+    source_platform:document.getElementById('productModalPlatform').value.trim(),
+    shop:document.getElementById('productModalShop').value.trim(),
+    sku_name:document.getElementById('productModalSku').value.trim(),
+    product_subtype:document.getElementById('productModalSubtype').value.trim(),
+    category_level1:document.getElementById('productModalC1').value.trim(),
+    category_level2:document.getElementById('productModalC2').value.trim(),
+    category_level3:document.getElementById('productModalC3').value.trim(),
+    category_level4:document.getElementById('productModalC4').value.trim(),
+    category_remark:document.getElementById('productModalRemark').value.trim(),
+    is_dirty_data:parseInt(document.getElementById('productModalDirty').value||'0',10)
+  }
+  if(!payload.keyword){toast('关键字不能为空','error');btn.textContent='保存';btn.disabled=false;return}
+  if(!payload.source_platform){toast('来源平台不能为空','error');btn.textContent='保存';btn.disabled=false;return}
+  if(!payload.sku_name){toast('商品标题不能为空','error');btn.textContent='保存';btn.disabled=false;return}
+  fetch('/api/admin/products/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+    .then(function(r){return r.json()})
+    .then(function(d){
+      if(d.ok){
+        toast('商品信息已更新')
+        document.getElementById('productModal').style.display='none'
+        loadProducts()
+      }else{
+        toast(d.error||'保存失败','error')
+      }
+    })
+    .catch(function(){toast('保存失败','error')})
+    .finally(function(){btn.textContent='保存';btn.disabled=false})
+})
+
+// ===== 告警 =====
+function loadAlerts(){
+  fetch('/api/admin/alerts',{credentials:'same-origin'}).then(function(r){return r.json()}).then(function(d){
+    if(!d.ok)return;var alerts=d.data.alerts||[]
+    var tbody=document.querySelector('#alertsTable tbody')
+    tbody.innerHTML=alerts.map(function(a){return '<tr><td>'+a.id+'</td><td>'+a.keyword+'</td><td>'+a.subtype+'</td><td>¥'+a.prev_price.toFixed(2)+'</td><td>¥'+a.latest_price.toFixed(2)+'</td><td style="color:'+(a.delta>0?'#ef4444':'var(--teal)')+'">'+(a.delta>0?'+':'')+(a.delta_rate*100).toFixed(1)+'%</td><td>'+a.level+'</td><td>'+a.time+'</td><td style="text-align:right"><button class="btn btn-outline btn-sm dismissAlert" data-aid="'+a.id+'">忽略</button></td></tr>'}).join('')
+    if(!alerts.length)tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px">暂无异常告警</td></tr>'
+    tbody.querySelectorAll('.dismissAlert').forEach(function(b){b.addEventListener('click',function(){fetch('/api/admin/alerts/dismiss',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:parseInt(b.dataset.aid)})}).then(function(r){return r.json()}).then(function(d){if(d.ok){toast('已忽略');loadAlerts()}})})})
+  })
+}
+
+{% if user_role == 'admin' %}loadUsers();{% endif %}
+loadProducts()
+loadAlerts()
+})()
+</script>
+{% endblock %}

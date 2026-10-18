@@ -1,0 +1,60 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: school-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123}
+      MYSQL_DATABASE: school_market
+      MYSQL_USER: school
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-school123}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${MYSQL_ROOT_PASSWORD:-root123}"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  jobmanager:
+    image: flink:1.18.1-scala_2.12-java11
+    container_name: school-flink-jobmanager
+    restart: unless-stopped
+    command: jobmanager
+    ports:
+      - "8081:8081"
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: jobmanager
+        parallelism.default: 1
+        execution.checkpointing.interval: 30s
+    volumes:
+      - ./:/opt/project
+      - ./docker/flink/lib/flink-connector-jdbc-3.2.0-1.18.jar:/opt/flink/lib/flink-connector-jdbc-3.2.0-1.18.jar:ro
+      - ./docker/flink/lib/mysql-connector-j-8.4.0.jar:/opt/flink/lib/mysql-connector-j-8.4.0.jar:ro
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  taskmanager:
+    image: flink:1.18.1-scala_2.12-java11
+    container_name: school-flink-taskmanager
+    restart: unless-stopped
+    command: taskmanager
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 2
+        parallelism.default: 1
+    volumes:
+      - ./:/opt/project
+      - ./docker/flink/lib/flink-connector-jdbc-3.2.0-1.18.jar:/opt/flink/lib/flink-connector-jdbc-3.2.0-1.18.jar:ro
+      - ./docker/flink/lib/mysql-connector-j-8.4.0.jar:/opt/flink/lib/mysql-connector-j-8.4.0.jar:ro
+    depends_on:
+      - jobmanager
+
+volumes:
+  mysql_data:

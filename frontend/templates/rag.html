@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>装机知识库问答（RAG）</title>
+    <style>
+        body { font-family: -apple-system, "Microsoft YaHei", sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; }
+        h1 { font-size: 24px; }
+        #question { width: 100%; padding: 12px; font-size: 15px; box-sizing: border-box; }
+        #askBtn { margin-top: 10px; padding: 10px 24px; font-size: 15px; cursor: pointer; }
+        #answer { margin-top: 20px; padding: 16px; background: #f7f8fa; border-radius: 8px; white-space: pre-wrap; line-height: 1.7; }
+        .ctx { margin-top: 12px; font-size: 13px; color: #666; border-top: 1px solid #eee; padding-top: 8px; }
+        .ctx-item { margin: 6px 0; }
+    </style>
+</head>
+<body>
+    <h1>💬 装机知识库问答（RAG）</h1>
+    <p>问一个装机问题，比如「7500F 配什么主板？」「8000 预算玩游戏怎么配？」</p>
+    <input id="question" placeholder="输入你的装机问题...">
+    <button id="askBtn">提问</button>
+    <div id="answer"></div>
+
+    <script>
+        const askBtn = document.getElementById('askBtn');
+        const questionInput = document.getElementById('question');
+        const answerDiv = document.getElementById('answer');
+
+        askBtn.addEventListener('click', async () => {
+            const question = questionInput.value.trim();
+            if (!question) { alert('请先输入问题'); return; }
+            askBtn.disabled = true;
+            answerDiv.textContent = '思考中...';
+            try {
+                const resp = await fetch('/api/rag/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question })
+                });
+                const json = await resp.json();
+                if (json.ok) {
+                    answerDiv.textContent = json.data.answer;
+                    const ctxDiv = document.createElement('div');
+                    ctxDiv.className = 'ctx';
+                    ctxDiv.innerHTML = '<strong>命中的知识片段：</strong>';
+                    json.data.context.forEach(c => {
+                        const p = document.createElement('div');
+                        p.className = 'ctx-item';
+                        p.textContent = `[${c.source}] 相似度 ${c.score}：${c.text.slice(0, 80)}...`;
+                        ctxDiv.appendChild(p);
+                    });
+                    answerDiv.appendChild(ctxDiv);
+                } else {
+                    answerDiv.textContent = '出错了：' + (json.error || '未知错误');
+                }
+            } catch (err) {
+                answerDiv.textContent = '请求失败：' + err.message;
+            } finally {
+                askBtn.disabled = false;
+            }
+        });
+
+        questionInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') askBtn.click();
+        });
+    </script>
+</body>
+</html>

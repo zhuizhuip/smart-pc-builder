@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+pa.venv/
+.venv/
+venv/
+
+# 本地运行时 / 浏览器登录态
+edge_profile/
+*.log
+
+# 临时 / 大文件
+tmp_*.*
+thesis_final_extract.txt
+
+# 根目录截图
+/*.png
+
+# 原始采集 HTML（仅离线刷新用，体积大，不上传）
+淘宝数据/
+中关村数据/
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 敏感信息（密钥不提交）
+.env
+
+# 本地工具目录
+.claude/
+.playwright-mcp/
+
+# 爬虫数据产物（运行时读 MySQL，这些不需要提交）
+data/taobao_market.db
+data/taobao_pc_parts_snapshot.csv
+data/taobao_collection_plan.csv
+data/analytics/
+data/flink_input/
+data/archive/
+data/debug_pages/
+data/_admin_script_check.js
+data/app_stdout.log
+data/app_stderr.log
+data/开题报告_raw.txt
+
+# 项目文档（待重写，暂不提交）
+docs/

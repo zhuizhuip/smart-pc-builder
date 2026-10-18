@@ -1,0 +1,42 @@
+{% extends "portal_base.html" %}
+{% block title %}知识分类{% endblock %}
+{% block page_title %}{{ current_category.name }}{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="section-head-inline">
+    <div>
+      <p class="section-tag">Category</p>
+      <h2>{{ current_category.name }}</h2>
+    </div>
+    <a class="ghost-link" href="{{ url_for('knowledge_home') }}" data-toast="正在返回知识中心">返回知识中心</a>
+  </div>
+  <div class="pill-row">
+    {% for category in categories %}
+    <a class="filter-pill {% if category.slug == current_category.slug %}is-active{% endif %}" href="{{ url_for('knowledge_category', slug=category.slug) }}" data-toast="正在切换知识分类">{{ category.name }}</a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="card" style="margin-top:18px">
+  {% if articles %}
+  <div class="knowledge-stack">
+    {% for article in articles %}
+    <a class="knowledge-card" href="{{ url_for('knowledge_article_detail', article_id=article.id) }}" style="text-decoration:none;color:inherit" data-toast="正在打开知识文章">
+      <div class="knowledge-head">
+        <div>
+          <h3>{{ article.title }}</h3>
+          <div class="meta-line">
+            <span>{{ article.created_at }}</span>
+            <span>浏览 {{ article.view_count }}</span>
+          </div>
+        </div>
+      </div>
+      <p class="article-copy">{{ article.summary }}</p>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">该分类下暂时还没有文章。</div>
+  {% endif %}
+</section>
+{% endblock %}

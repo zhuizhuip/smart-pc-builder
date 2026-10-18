@@ -1,0 +1,84 @@
+{% extends "portal_base.html" %}
+{% block title %}社区方案详情{% endblock %}
+{% block page_title %}社区方案详情{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="detail-head">
+    <div>
+      <p class="section-tag">Community Detail</p>
+      <h2>{{ post.title }}</h2>
+      <div class="detail-meta">
+        <span>{{ post.author_name }}</span>
+        <span>{{ post.created_at }}</span>
+        <span>{{ post.usage_label }}</span>
+        <span>预算 ￥{{ "%.0f"|format(post.budget) }}</span>
+        <span>总价 ￥{{ "%.0f"|format(post.total_price) }}</span>
+      </div>
+    </div>
+    <div class="action-row">
+      <form class="inline-form" method="post" action="{{ url_for('community_post_import', post_id=post.id) }}" data-toast-submit="正在导入到智能搭配">
+        <button class="primary-button" type="submit">一键导入智能搭配</button>
+      </form>
+      <button class="secondary-button {% if post.liked %}is-active{% endif %}" type="button" id="detailLikeButton" data-url="{{ url_for('community_post_like', post_id=post.id) }}">点赞 {{ post.like_count }}</button>
+      <button class="secondary-button {% if post.favorited %}is-active{% endif %}" type="button" id="detailFavoriteButton" data-url="{{ url_for('community_post_favorite', post_id=post.id) }}">收藏 {{ post.favorite_count }}</button>
+    </div>
+  </div>
+  <p class="card-copy">{{ post.summary }}</p>
+  {% if post.content %}
+  <div class="article-body">{{ post.content }}</div>
+  {% endif %}
+
+  <div class="detail-grid">
+    <div class="detail-panel">
+      <h4>方案配件明细</h4>
+      <div class="detail-list">
+        {% for item in post.items %}
+        <article class="detail-item">
+          <strong>{{ item.component_type }} / {{ item.component_subtype }}</strong>
+          <span>{{ item.shop or '未提供店铺信息' }}</span>
+          <span>{{ item.sku_name }}</span>
+          <span>价格 ￥{{ "%.2f"|format(item.effective_price) }}</span>
+          {% if item.source_url %}
+          <p><a class="jump-button jump-button-inline" href="{{ item.source_url }}" target="_blank" rel="noopener noreferrer" data-toast="正在打开商品链接">查看商品</a></p>
+          {% endif %}
+          <p>{{ item.reason_text or '该配件未填写额外推荐说明。' }}</p>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="detail-panel">
+      <h4>使用建议</h4>
+      <div class="mini-stack">
+        <article class="knowledge-card">
+          <h3>先导入，再微调</h3>
+          <p class="article-copy">导入后可继续修改预算、用途和指定部件，用现有推荐引擎重新计算。</p>
+        </article>
+        <article class="knowledge-card">
+          <h3>关注兼容性提示</h3>
+          <p class="article-copy">社区方案适合作为参考，正式下单前仍建议结合智能搭配结果再次校验兼容性。</p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+async function bindToggle(buttonId, label) {
+  const button = document.getElementById(buttonId);
+  if (!button) return;
+  button.addEventListener('click', async () => {
+    const resp = await fetch(button.dataset.url, { method: 'POST' });
+    const data = await resp.json();
+    if (!resp.ok || !data.ok) {
+      window.showAppToast?.(data.error || '操作失败', 'error');
+      return;
+    }
+    button.classList.toggle('is-active', data.data.active);
+    button.textContent = `${label} ${label === '点赞' ? data.data.like_count : data.data.favorite_count}`;
+    window.showAppToast?.(`${label}状态已更新`, 'success');
+  });
+}
+bindToggle('detailLikeButton', '点赞');
+bindToggle('detailFavoriteButton', '收藏');
+</script>
+{% endblock %}

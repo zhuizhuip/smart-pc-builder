@@ -1,0 +1,41 @@
+{% extends "portal_base.html" %}
+{% block title %}文章详情{% endblock %}
+{% block page_title %}文章详情{% endblock %}
+{% block content %}
+<section class="split-shell">
+  <article class="card">
+    <div class="detail-head">
+      <div>
+        <p class="section-tag">{{ article.category_name }}</p>
+        <h2>{{ article.title }}</h2>
+        <div class="detail-meta">
+          <span>{{ article.created_at }}</span>
+          <span>浏览 {{ article.view_count }}</span>
+        </div>
+      </div>
+      <a class="ghost-link" href="{{ url_for('knowledge_category', slug=article.category_slug) }}" data-toast="正在返回分类页">返回分类</a>
+    </div>
+    <p class="card-copy">{{ article.summary }}</p>
+    <div class="article-body">{{ article.content }}</div>
+  </article>
+
+  <aside class="card">
+    <div class="section-head">
+      <p class="section-tag">Related</p>
+      <h2>继续阅读</h2>
+    </div>
+    {% if related_articles %}
+    <div class="mini-stack">
+      {% for item in related_articles %}
+      <a class="knowledge-card" href="{{ url_for('knowledge_article_detail', article_id=item.id) }}" style="text-decoration:none;color:inherit" data-toast="正在打开相关文章">
+        <h3>{{ item.title }}</h3>
+        <p class="article-copy">{{ item.summary }}</p>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="knowledge-side-note">当前分类下没有更多相关文章，可以返回知识中心查看其它内容。</p>
+    {% endif %}
+  </aside>
+</section>
+{% endblock %}

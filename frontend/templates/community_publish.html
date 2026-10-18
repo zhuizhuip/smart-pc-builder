@@ -1,0 +1,69 @@
+{% extends "portal_base.html" %}
+{% block title %}发布社区方案{% endblock %}
+{% block page_title %}发布社区方案{% endblock %}
+{% block content %}
+<section class="split-shell">
+  <section class="card">
+    <div class="section-head">
+      <p class="section-tag">Publish</p>
+      <h2>发布你的装机方案</h2>
+    </div>
+    <form method="post" class="form-grid" data-toast-submit="正在发布社区方案">
+      <input type="hidden" name="source_type" value="{{ 'manual' if not draft else ('recommendation' if draft.results and draft.results[0].get('keyword') else 'build') }}" />
+      <input type="hidden" name="source_task_id" value="{{ draft.id if draft else '' }}" />
+      <input type="hidden" name="items_json" value="{{ (draft.results if draft else [])|tojson }}" />
+      <label>
+        <span>方案标题</span>
+        <input type="text" name="title" value="{{ (draft.usage_label ~ '推荐方案') if draft else '' }}" placeholder="例如：6000 元主流游戏方案" required />
+      </label>
+      <label>
+        <span>使用场景</span>
+        <select name="usage_scenario">
+          {% for code, profile in recommendation_profiles.items() %}
+          <option value="{{ code }}" {% if draft and draft.usage_scenario == code %}selected{% endif %}>{{ profile.label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        <span>预算</span>
+        <input type="number" name="budget" min="0" step="100" value="{{ draft.budget if draft else '' }}" required />
+      </label>
+      <label>
+        <span>方案总价</span>
+        <input type="number" name="total_price" min="0" step="0.01" value="{{ (draft.total_budget if draft and draft.total_budget is defined else draft.total_price) if draft else '' }}" required />
+      </label>
+      <label>
+        <span>一句话简介</span>
+        <input type="text" name="summary" value="{{ draft.note if draft else '' }}" placeholder="简要说明这套方案适合什么人" />
+      </label>
+      <label>
+        <span>补充说明</span>
+        <textarea name="content" rows="8" style="width:100%;padding:14px 15px;border-radius:16px;border:1px solid rgba(37, 99, 235, 0.12);background:#f8fbff;color:var(--ink);font:inherit;font-size:14px;line-height:1.7;" placeholder="可以补充你选择这些配件的理由、是否重视静音、颜值、性价比等"></textarea>
+      </label>
+      <button class="primary-button" type="submit">确认发布</button>
+    </form>
+  </section>
+
+  <aside class="card">
+    <div class="section-head">
+      <p class="section-tag">Preview</p>
+      <h2>待发布配件明细</h2>
+    </div>
+    {% if draft and draft.results %}
+    <div class="detail-list">
+      {% for item in draft.results %}
+      <article class="detail-item">
+        <strong>{{ item.component_type or item.keyword }} / {{ item.component_subtype or item.product_subtype }}</strong>
+        <span>{{ item.shop }}</span>
+        <span>{{ item.sku_name }}</span>
+        <span>价格 ￥{{ "%.2f"|format(item.effective_price) }}</span>
+        <p>{{ item.reason_text }}</p>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">当前没有可复用的推荐结果，请先从推荐页、搭配历史页或社区详情页进入。</div>
+    {% endif %}
+  </aside>
+</section>
+{% endblock %}

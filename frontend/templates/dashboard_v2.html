@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>电脑配件市场分析系统</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard_v2.css') }}" />
+  </head>
+  <body>
+    <div class="dashboard-layout">
+      <aside class="dashboard-sidebar">
+        <div class="sidebar-brand">
+          <p class="sidebar-kicker">Market Workspace</p>
+          <h1>电脑配件市场分析系统</h1>
+        </div>
+
+        <nav class="sidebar-nav">
+          <a class="sidebar-link active" href="{{ url_for('index') }}">
+            <span class="nav-glyph">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="4" y="4" width="6" height="6" rx="1.8"></rect>
+                <rect x="14" y="4" width="6" height="6" rx="1.8"></rect>
+                <rect x="4" y="14" width="6" height="6" rx="1.8"></rect>
+                <rect x="14" y="14" width="6" height="6" rx="1.8"></rect>
+              </svg>
+            </span>
+            <span>公开面板</span>
+          </a>
+          {% if current_user %}
+          <a class="sidebar-link" href="{{ url_for('build_center') }}">
+            <span class="nav-glyph">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 4l2.2 5.2L20 12l-5.8 2.8L12 20l-2.2-5.2L4 12l5.8-2.8L12 4z"></path>
+              </svg>
+            </span>
+            <span>智能搭配</span>
+          </a>
+          <a class="sidebar-link" href="{{ url_for('build_history') }}">
+            <span class="nav-glyph">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 7H3v4"></path>
+                <path d="M4 11a8 8 0 1 0 2.4-5.6L3 7"></path>
+              </svg>
+            </span>
+            <span>搭配历史</span>
+          </a>
+          <a class="sidebar-link" href="{{ url_for('preferences') }}">
+            <span class="nav-glyph">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="8" r="3.2"></circle>
+                <path d="M6 19c1.4-3 3.9-4.5 6-4.5s4.6 1.5 6 4.5"></path>
+              </svg>
+            </span>
+            <span>个人偏好</span>
+          </a>
+          {% if current_user and current_user.role in ('admin', 'data_admin') %}
+          <a class="sidebar-link" href="{{ url_for('admin_panel') }}">
+            <span class="nav-glyph"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.8"/><path d="M19.4 15a1 1 0 0 0 .2 1.1l.2.2a1 1 0 0 1 0 1.4l-1.1 1.1a1 1 0 0 1-1.4 0l-.2-.2a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9v.3a1 1 0 0 1-1 1h-1.6a1 1 0 0 1-1-1v-.3a1 1 0 0 0-.6-.9 1 1 0 0 0-1.1.2l-.2.2a1 1 0 0 1-1.4 0l-1.1-1.1a1 1 0 0 1 0-1.4l.2-.2a1 1 0 0 0 .2-1.1 1 1 0 0 0-.9-.6H4a1 1 0 0 1-1-1v-1.6a1 1 0 0 1 1-1h.3a1 1 0 0 0 .9-.6 1 1 0 0 0-.2-1.1l-.2-.2a1 1 0 0 1 0-1.4l1.1-1.1a1 1 0 0 1 1.4 0l.2.2a1 1 0 0 0 1.1.2 1 1 0 0 0 .6-.9V4a1 1 0 0 1 1-1h1.6a1 1 0 0 1 1 1v.3a1 1 0 0 0 .6.9 1 1 0 0 0 1.1-.2l.2-.2a1 1 0 0 1 1.4 0l1.1 1.1a1 1 0 0 1 0 1.4l-.2.2a1 1 0 0 0-.2 1.1 1 1 0 0 0 .9.6h.3a1 1 0 0 1 1 1v1.6a1 1 0 0 1-1 1h-.3a1 1 0 0 0-.9.6Z"/></svg></span>
+            <span>系统管理</span>
+          </a>
+          {% endif %}
+          {% endif %}
+        </nav>
+        {% if current_user %}
+        <details class="sidebar-nav-group" {% if request.endpoint in ['community_home', 'community_post_detail', 'community_publish', 'knowledge_home', 'knowledge_category', 'knowledge_article_detail', 'knowledge_manage'] %}open{% endif %}>
+          <summary class="sidebar-link sidebar-folder">
+            <span class="nav-glyph">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h3l1.6 1.8h6.4A2.5 2.5 0 0 1 20 9.3v7.2a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z"></path>
+              </svg>
+            </span>
+            <span>社区中心</span>
+            <span class="nav-caret" aria-hidden="true">⌄</span>
+          </summary>
+          <div class="sidebar-subnav">
+            <a class="sidebar-sub-link {% if request.endpoint in ['community_home', 'community_post_detail', 'community_publish'] %}is-active{% endif %}" href="{{ url_for('community_home') }}">装机方案社区</a>
+            <a class="sidebar-sub-link {% if request.endpoint in ['knowledge_home', 'knowledge_category', 'knowledge_article_detail'] %}is-active{% endif %}" href="{{ url_for('knowledge_home') }}">装机经验知识</a>
+            {% if current_user.role in ('admin', 'data_admin') %}
+            <a class="sidebar-sub-link {% if request.endpoint == 'knowledge_manage' %}is-active{% endif %}" href="{{ url_for('knowledge_manage') }}">知识维护</a>
+            {% endif %}
+          </div>
+        </details>
+        {% endif %}
+
+        <section class="sidebar-account">
+          {% if current_user %}
+          <div class="account-avatar">
+            {{ (current_user.display_name or current_user.username or 'U')[:1] | upper }}
+          </div>
+          <div class="account-meta">
+            <strong>{{ current_user.display_name or current_user.username }}</strong>
+            <span>{{ current_user.username }}</span>
+          </div>
+          <div class="account-actions">
+            <a href="{{ url_for('profile') }}">个人中心</a>
+            <a href="{{ url_for('logout') }}">退出登录</a>
+          </div>
+          {% else %}
+          <div class="account-avatar guest">G</div>
+          <div class="account-meta">
+            <strong>游客模式</strong>
+            <span>登录后可解锁智能搭配、个人偏好和历史记录等完整功能。</span>
+          </div>
+          <div class="account-actions">
+            <a href="{{ url_for('login') }}">立即登录</a>
+            <a href="{{ url_for('register') }}">注册账号</a>
+          </div>
+          {% endif %}
+        </section>
+
+        {% if current_user %}
+        <button class="sidebar-primary" type="button" onclick="window.location.href='{{ url_for('build_center') }}'">+ 新建搭配</button>
+        {% endif %}
+      </aside>
+
+      <main class="dashboard-main">
+        <header class="workspace-topbar">
+          <button class="menu-button" type="button" aria-label="切换导航">☰</button>
+          <div class="workspace-heading">
+            <p class="page-kicker">Computer Parts Market Analysis</p>
+            <h2>公开分析面板</h2>
+          </div>
+          <div class="workspace-actions">
+            <a id="downloadCleanSnapshot" class="ghost-button action-link" href="/api/download/clean-snapshot.csv">导出快照</a>
+            {% if current_user %}
+            <a class="primary-button action-link" href="{{ url_for('build_center') }}">进入搭配中心</a>
+            {% endif %}
+          </div>
+        </header>
+
+        <section class="hero-grid">
+          <article class="hero-card">
+            <div class="mini-tag">Overview</div>
+            <h3>电脑配件市场分析系统</h3>
+
+            <div class="control-row">
+              <label class="hero-picker" for="keywordSelect">
+                <span>观察品类</span>
+                <select id="keywordSelect"></select>
+              </label>
+
+              <div class="inline-search">
+                <span class="search-icon" aria-hidden="true">⌕</span>
+                <input id="searchInput" type="search" placeholder="搜索型号、品牌、店铺或芯片组" />
+                <button id="searchButton" class="search-button" type="button">搜索</button>
+              </div>
+            </div>
+
+            <div class="hero-meta">
+              <div class="meta-card">
+                <span>当前观察品类</span>
+                <strong id="metricKeyword">-</strong>
+              </div>
+              <div class="meta-card">
+                <span>最近更新时间</span>
+                <strong id="metricLatestTime">-</strong>
+              </div>
+              <div class="meta-card">
+                <span>有效小类</span>
+                <strong id="metricSubtypeCount">-</strong>
+              </div>
+            </div>
+          </article>
+
+          <article class="state-card">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Realtime State</p>
+                <h3>数据状态</h3>
+              </div>
+              <button id="manualRefreshButton" class="sync-button" type="button">实时同步</button>
+            </div>
+
+            <div class="state-metrics">
+              <div>
+                <span>有效记录</span>
+                <strong id="metricSnapshotCount">-</strong>
+              </div>
+              <div>
+                <span>剔除脏数据</span>
+                <strong id="metricDirtyCount">-</strong>
+              </div>
+            </div>
+
+            <div class="state-summary">
+              <div class="summary-row">
+                <span>同步状态</span>
+                <strong id="syncStatusText">已加载最近批次数据</strong>
+              </div>
+            </div>
+          </article>
+          {% if current_user and market_articles %}
+          <article class="panel search-panel-card">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Knowledge</p>
+                <h3>价格趋势解读</h3>
+              </div>
+              <span>结合当前市场页继续延伸阅读</span>
+            </div>
+            <div class="knowledge-mini-list">
+              {% for article in market_articles %}
+              <a class="knowledge-mini-item" href="{{ url_for('knowledge_article_detail', article_id=article.id) }}">
+                <strong>{{ article.title }}</strong>
+                <span>{{ article.summary }}</span>
+              </a>
+              {% endfor %}
+            </div>
+          </article>
+          {% endif %}
+        </section>
+
+        <section class="card-grid">
+          <article class="panel trend-panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Price Motion</p>
+                <h3 id="trendTitle">小类价格趋势</h3>
+              </div>
+              <span>按型号聚合</span>
+            </div>
+            <div id="trendChart" class="chart"></div>
+          </article>
+
+          <article class="panel subtype-panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Price Range</p>
+                <h3 id="subtypeChartTitle">小类均价与价格区间</h3>
+              </div>
+              <span>最低 / 均价 / 最高</span>
+            </div>
+            <div id="subtypeChart" class="chart compact-chart"></div>
+          </article>
+
+          <article class="panel alert-panel" id="alertPanel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Alert Feed</p>
+                <h3 id="alertTitle">异常告警</h3>
+              </div>
+              <span>风险输入</span>
+            </div>
+            <div id="alertList" class="scroll-panel"></div>
+          </article>
+
+          <article class="panel snapshot-panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Snapshot</p>
+                <h3 id="snapshotTitle">价格边界</h3>
+              </div>
+              <span>同型号区间</span>
+            </div>
+            <div class="scroll-panel snapshot-scroll">
+              <table class="snapshot-table">
+                <thead>
+                  <tr>
+                    <th>小类</th>
+                    <th>最低价商品</th>
+                    <th>最高价商品</th>
+                    <th>时间</th>
+                  </tr>
+                </thead>
+                <tbody id="snapshotTableBody"></tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="panel search-panel-card">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Search Result</p>
+                <h3>搜索结果</h3>
+              </div>
+              <span>当前品类下的匹配记录</span>
+            </div>
+            <div class="scroll-panel search-panel">
+              <table class="snapshot-table">
+                <thead>
+                  <tr>
+                    <th>采集时间</th>
+                    <th>品类</th>
+                    <th>小类</th>
+                    <th>店铺</th>
+                    <th>商品</th>
+                    <th>价格</th>
+                  </tr>
+                </thead>
+                <tbody id="searchTableBody"></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script>
+      // 从系统配置注入冷却时间
+      window.__REFRESH_COOLDOWN_SECONDS__ = {{ refresh_cooldown or 60 }};
+    </script>
+    <script src="{{ url_for('static', filename='dashboard_v2.js') }}"></script>
+  </body>
+</html>

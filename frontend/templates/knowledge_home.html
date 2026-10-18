@@ -1,0 +1,49 @@
+{% extends "portal_base.html" %}
+{% block title %}装机经验知识{% endblock %}
+{% block page_title %}装机经验知识{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="section-head-inline">
+    <div>
+      <p class="section-tag">Knowledge</p>
+      <h2>选购、兼容与价格判断的经验集合</h2>
+    </div>
+    {% if current_user and current_user.role in ('admin', 'data_admin') %}
+    <a class="ghost-link" href="{{ url_for('knowledge_manage') }}" data-toast="正在进入知识维护">进入知识维护</a>
+    {% endif %}
+  </div>
+  <div class="pill-row">
+    {% for category in categories %}
+    <a class="filter-pill" href="{{ url_for('knowledge_category', slug=category.slug) }}" data-toast="正在切换知识分类">{{ category.name }}</a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="card" style="margin-top:18px">
+  <div class="section-head">
+    <p class="section-tag">Articles</p>
+    <h2>最近更新</h2>
+  </div>
+  {% if articles %}
+  <div class="knowledge-stack">
+    {% for article in articles %}
+    <a class="knowledge-card" href="{{ url_for('knowledge_article_detail', article_id=article.id) }}" style="text-decoration:none;color:inherit" data-toast="正在打开知识文章">
+      <div class="knowledge-head">
+        <div>
+          <h3>{{ article.title }}</h3>
+          <div class="meta-line">
+            <span>{{ article.category_name }}</span>
+            <span>{{ article.created_at }}</span>
+            <span>浏览 {{ article.view_count }}</span>
+          </div>
+        </div>
+      </div>
+      <p class="article-copy">{{ article.summary }}</p>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">当前还没有知识文章。</div>
+  {% endif %}
+</section>
+{% endblock %}

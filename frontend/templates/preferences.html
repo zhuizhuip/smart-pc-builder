@@ -1,0 +1,42 @@
+{% extends "portal_base.html" %}
+{% block title %}个人偏好{% endblock %}
+{% block page_title %}个人偏好{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="section-head">
+    <p class="section-tag">Preferences</p>
+    <h2>偏好设置</h2>
+  </div>
+  <form method="post" class="form-grid multi-column">
+    <label>
+      <span>常用场景</span>
+      <select name="usage_preference">
+        <option value="">请选择</option>
+        {% for code, profile in recommendation_profiles.items() %}
+        <option value="{{ code }}" {% if current_user.usage_preference == code %}selected{% endif %}>{{ profile.label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      <span>预算范围（元）</span>
+      <div style="display:flex;gap:10px;align-items:center">
+        <input type="number" min="0" step="100" name="budget_min" value="{{ current_user.budget_min or '' }}" placeholder="最低" style="flex:1" />
+        <span style="color:var(--muted)">—</span>
+        <input type="number" min="0" step="100" name="budget_max" value="{{ current_user.budget_max or '' }}" placeholder="最高" style="flex:1" />
+      </div>
+    </label>
+    <label>
+      <span>偏好品牌</span>
+      <input type="text" name="preferred_brands" value="{{ current_user.preferred_brands or '' }}" placeholder="例如 AMD, Intel, 华硕, 微星" />
+    </label>
+    <label>
+      <span>偏好关键词</span>
+      <input type="text" name="preferred_keywords" value="{{ current_user.preferred_keywords or '' }}" placeholder="例如 DDR5, RTX, B650M" />
+    </label>
+    <div style="display:flex;gap:12px;align-items:center">
+      <button type="submit" class="primary-button">保存偏好</button>
+      <a href="{{ url_for('profile') }}" class="ghost-link" style="text-decoration:none;font-size:14px">返回个人中心</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

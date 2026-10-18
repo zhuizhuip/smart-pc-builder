@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>电脑配件市场分析系统 - 视觉预览</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='design_preview.css') }}" />
+  </head>
+  <body>
+    <div class="preview-app">
+      <aside class="preview-rail">
+        <div class="rail-brand">
+          <p>Market Workspace</p>
+          <h1>电脑配件市场分析系统</h1>
+        </div>
+
+        <nav class="rail-nav">
+          <a class="rail-link active" href="javascript:void(0)">
+            <span class="glyph">▣</span>
+            <span>公开面板</span>
+          </a>
+          <a class="rail-link" href="javascript:void(0)">
+            <span class="glyph">✦</span>
+            <span>智能搭配</span>
+          </a>
+          <a class="rail-link" href="javascript:void(0)">
+            <span class="glyph">↺</span>
+            <span>搭配历史</span>
+          </a>
+          <a class="rail-link" href="javascript:void(0)">
+            <span class="glyph">◎</span>
+            <span>个人偏好</span>
+          </a>
+        </nav>
+
+        <button class="rail-primary">+ 新建任务</button>
+
+        <section class="rail-user">
+          <div class="user-avatar">U</div>
+          <div class="user-meta">
+            <strong>用户工作区</strong>
+            <span>预算、用途和已选配件将直接进入搭配排序。</span>
+          </div>
+        </section>
+      </aside>
+
+      <main class="preview-main">
+        <header class="preview-topbar">
+          <button class="menu-btn">☰</button>
+          <div class="top-search">
+            <span class="search-glyph">⌕</span>
+            <input type="text" value="搜索型号、品牌、店铺或芯片组" readonly />
+          </div>
+          <div class="notify-dot"></div>
+        </header>
+
+        <section class="hero-grid">
+          <article class="hero-card">
+            <div class="mini-tag">Overview</div>
+            <h2>市场概览</h2>
+            <p class="hero-copy">聚焦价格走势、异常波动与智能搭配入口，减少冗余说明，突出当前可用决策信息。</p>
+
+            <div class="hero-bars">
+              <div class="bar b1"></div>
+              <div class="bar b2"></div>
+              <div class="bar b3"></div>
+              <div class="bar b4"></div>
+              <div class="bar b5"></div>
+            </div>
+
+            <div class="hero-meta">
+              <div>
+                <span>有效记录</span>
+                <strong>646</strong>
+              </div>
+              <div>
+                <span>有效小类</span>
+                <strong>52</strong>
+              </div>
+              <div>
+                <span>规则库</span>
+                <strong>143</strong>
+              </div>
+            </div>
+          </article>
+
+          <article class="state-card">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Realtime State</p>
+                <h3>重点型号状态</h3>
+              </div>
+              <span class="inline-status">实时同步</span>
+            </div>
+
+            <div class="state-list">
+              <div class="state-item">
+                <div class="state-code">5060</div>
+                <div class="state-copy">
+                  <strong>RTX 5060</strong>
+                  <p>价格稳定，适合主流游戏方案。</p>
+                </div>
+                <span class="state-pill">正常</span>
+              </div>
+              <div class="state-item warn">
+                <div class="state-code">650W</div>
+                <div class="state-copy">
+                  <strong>650W 电源</strong>
+                  <p>存在高价样本，建议谨慎纳入。</p>
+                </div>
+                <span class="state-pill warn">观察</span>
+              </div>
+              <div class="state-item">
+                <div class="state-code">B650</div>
+                <div class="state-copy">
+                  <strong>B650M</strong>
+                  <p>平台兼容稳定，适合主流搭配。</p>
+                </div>
+                <span class="state-pill">正常</span>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="card-grid">
+          <article class="panel trend-panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Price Motion</p>
+                <h3>小类价格趋势</h3>
+              </div>
+              <span>按型号聚合</span>
+            </div>
+
+            <div class="trend-stage compact">
+              <div class="trend-floors"></div>
+              <div class="curve c1"><span>RTX 5060</span></div>
+              <div class="curve c2"><span>RTX 5060 Ti</span></div>
+              <div class="curve c3"><span>RTX 5070</span></div>
+              <div class="curve c4"><span>RX 9060 XT</span></div>
+              <div class="axis-row">
+                <span>A</span>
+                <span>B</span>
+                <span>C</span>
+                <span>D</span>
+                <span>E</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel mix-panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Build Focus</p>
+                <h3>搭配重点</h3>
+              </div>
+              <span>精干输出</span>
+            </div>
+
+            <div class="mix-stack">
+              <div class="mix-card">
+                <small>方案 A</small>
+                <strong>7500F / B650M / RTX 5060</strong>
+                <p>控制总价波动，优先采用稳定价格窗口。</p>
+              </div>
+              <div class="mix-card">
+                <small>预算贴合</small>
+                <strong>¥ 5899</strong>
+                <p>预算内保留冗余，不把整机价格压满。</p>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel alert-panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Alert Feed</p>
+                <h3>异常告警</h3>
+              </div>
+              <span>风险输入</span>
+            </div>
+
+            <div class="alert-soft-empty">
+              当前没有达到阈值的小类价格异常告警。
+            </div>
+          </article>
+
+          <article class="panel quote-panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Snapshot</p>
+                <h3>价格边界</h3>
+              </div>
+              <span>同型号区间</span>
+            </div>
+
+            <div class="quote-stack">
+              <div class="quote-row">
+                <div>
+                  <small>RTX 5060</small>
+                  <strong>最低价样本</strong>
+                  <p>¥ 2099 / 微星万图师</p>
+                </div>
+                <div>
+                  <small>RTX 5060</small>
+                  <strong>最高价样本</strong>
+                  <p>¥ 3339 / 超频旗舰版</p>
+                </div>
+              </div>
+              <div class="quote-row">
+                <div>
+                  <small>B650M</small>
+                  <strong>最低价样本</strong>
+                  <p>¥ 599 / 入门 MATX</p>
+                </div>
+                <div>
+                  <small>B650M</small>
+                  <strong>最高价样本</strong>
+                  <p>¥ 1299 / WiFi 电竞版</p>
+                </div>
+              </div>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
